@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'Plus Jakarta Sans', var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono);
+  
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  
+  /* Custom Brands */
+  --color-whatsapp: #25D366;
+  --color-purple-accent: #7C3AED;
+  --color-cyan-accent: #00D4FF;
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  /* Default: Dark Theme */
+  --background: #050505;
+  --foreground: #ffffff;
+  --card: #0a0a0a;
+  --card-foreground: #ffffff;
+  --popover: #050505;
+  --popover-foreground: #ffffff;
+  
+  --primary: #25D366;
+  --primary-foreground: #000000;
+  
+  --secondary: #0f0f0f;
+  --secondary-foreground: #ffffff;
+  
+  --muted: #161616;
+  --muted-foreground: #a3a3a3;
+  
+  --accent: #7C3AED;
+  --accent-foreground: #ffffff;
+  
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #7C3AED;
+  
+  --radius: 0.75rem;
+  
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.85);
+}
+
+.light {
+  /* Stripe/Shopify Enterprise Light Theme */
+  --background: #F6F8FB;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  
+  --primary: #2563EB;
+  --primary-foreground: #FFFFFF;
+  
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  
+  --muted: #F9FAFB;
+  --muted-foreground: #6B7280;
+  
+  --accent: #2563EB;
+  --accent-foreground: #FFFFFF;
+  
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #2563EB;
+  
+  --glass-bg: #FFFFFF;
+  --glass-border: #E5E7EB;
+  --glass-shadow: rgba(0, 0, 0, 0.03);
+}
+
+.dark {
+  --background: #050505;
+  --foreground: #ffffff;
+  --card: #0a0a0a;
+  --card-foreground: #ffffff;
+  --popover: #050505;
+  --popover-foreground: #ffffff;
+  --primary: #25D366;
+  --primary-foreground: #000000;
+  --secondary: #0f0f0f;
+  --secondary-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --ring: #7C3AED;
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: rgba(0, 0, 0, 0.85);
+}
+
+@layer base {
+  * {
+    @apply border-border/80 outline-ring/50 transition-colors duration-300;
+  }
+  body {
+    @apply bg-background text-foreground selection:bg-purple-accent/30 selection:text-white overflow-x-hidden;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Custom premium utilities */
+@utility glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 var(--glass-shadow);
+}
+
+@utility glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--glass-border);
+}
+
+@utility glass-input {
+  background: rgba(255, 255, 255, 0.02);
+  @apply dark:bg-white/[0.02];
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  color: var(--foreground);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:focus {
+    border-color: rgba(37, 211, 102, 0.5);
+    box-shadow: 0 0 20px rgba(37, 211, 102, 0.15);
+    outline: none;
+  }
+}
+
+@utility text-glow-purple {
+  text-shadow: 0 0 40px rgba(124, 58, 237, 0.4);
+}
+
+@utility text-glow-green {
+  text-shadow: 0 0 40px rgba(37, 211, 102, 0.4);
+}
+
+@utility text-glow-cyan {
+  text-shadow: 0 0 40px rgba(0, 212, 255, 0.4);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--input);
+  border-radius: 9999px;
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Cinematic Background Keyframes */
+@keyframes aurora-1 {
+  0% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+  50% { transform: translate(60px, -40px) scale(1.1) rotate(180deg); }
+  100% { transform: translate(0px, 0px) scale(1) rotate(360deg); }
+}
+@keyframes aurora-2 {
+  0% { transform: translate(0px, 0px) scale(1.05) rotate(0deg); }
+  50% { transform: translate(-50px, 50px) scale(0.95) rotate(-180deg); }
+  100% { transform: translate(0px, 0px) scale(1.05) rotate(-360deg); }
+}
+@keyframes gradient-scroll {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@utility bg-noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+@utility animate-aurora-1 {
+  animation: aurora-1 22s infinite alternate ease-in-out;
+}
+
+@utility animate-aurora-2 {
+  animation: aurora-2 28s infinite alternate ease-in-out;
+}
+
+@utility animate-gradient-scroll {
+  background-size: 200% auto;
+  animation: gradient-scroll 6s ease infinite;
+}
+
+@utility subtle-grid {
+  background-color: #F8FAFC;
+  background-image: radial-gradient(#e2e8f0 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
