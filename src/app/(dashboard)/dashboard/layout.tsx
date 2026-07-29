@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { CATEGORIES_CONFIG } from "@/lib/config/categories";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,12 @@ export default function DashboardLayout({
 }) {
   const params = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { hydrateWorkspace, currentCategory } = useWorkspaceStore();
+
+  // Hydrate workspace state from backend APIs
+  useEffect(() => {
+    hydrateWorkspace();
+  }, [currentCategory, hydrateWorkspace]);
 
   // Extract category and tab parameters from route path
   const category = (params?.category as string) || "retail";

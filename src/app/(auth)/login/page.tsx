@@ -88,7 +88,7 @@ function WhatsAppCard() {
           <span className="text-[10px] font-black text-black">S</span>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] font-bold text-white">Sarah M.</div>
+          <div className="text-[11px] font-bold text-white">Customer</div>
           <div className="text-[9px] text-white/40">Just now · WhatsApp</div>
         </div>
         <div className="w-2 h-2 rounded-full bg-[#25D366]" style={{ animation: "pulse 2s ease-in-out infinite" }} />
@@ -211,13 +211,33 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg("");
     if (!email || !password) { setErrorMsg("Please fill in all fields."); return; }
     if (!email.includes("@")) { setErrorMsg("Please enter a valid email address."); return; }
     setIsLoading(true);
-    setTimeout(() => { setIsLoading(false); window.location.href = "/dashboard"; }, 2000);
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Invalid credentials.");
+      }
+      if (data.data?.accessToken) {
+        localStorage.setItem("accessToken", data.data.accessToken);
+        window.location.href = "/dashboard";
+      } else {
+        throw new Error("Authentication failed.");
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "Login failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -354,7 +374,7 @@ export default function LoginPage() {
                 id="email"
                 label="Email Address"
                 type="email"
-                placeholder="sarah@coffeebrand.com"
+                placeholder="enter your email"
                 value={email}
                 onChange={setEmail}
                 icon={<Mail size={15} />}

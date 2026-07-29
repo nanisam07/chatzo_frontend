@@ -381,7 +381,7 @@ export default function BookDemoPage() {
                   <InputField
                     id="demo-name"
                     label="Full Name"
-                    placeholder="Sarah Connor"
+                    placeholder="Enter your name"
                     value={form.fullName}
                     onChange={setField("fullName")}
                     icon={<User size={15} />}
@@ -392,7 +392,7 @@ export default function BookDemoPage() {
                     id="demo-email"
                     label="Business Email"
                     type="email"
-                    placeholder="sarah@coffeebrand.com"
+                    placeholder="Enter your email"
                     value={form.businessEmail}
                     onChange={setField("businessEmail")}
                     icon={<Mail size={15} />}

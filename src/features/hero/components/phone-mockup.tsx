@@ -18,7 +18,7 @@ const PRODUCTS = [
   },
   {
     id: 2,
-    name: "Nordic Coffee Cup",
+    name: "Standard Coffee Cup",
     price: 24.00,
     category: "Lifestyle",
     desc: "Handcrafted ceramic mug featuring insulated grip and volcanic gray finish.",
@@ -55,7 +55,7 @@ export function PhoneMockup() {
             <div className="flex justify-between items-center dark:border-white/5 border-slate-100 border-b pb-3">
               <div>
                 <p className="text-[10px] text-neutral-400 uppercase tracking-widest">Storefront</p>
-                <h3 className="text-sm font-bold tracking-tight dark:text-white text-slate-900">Nordic Design Co.</h3>
+                <h3 className="text-sm font-bold tracking-tight dark:text-white text-slate-900">Artisan Design Co.</h3>
               </div>
               <div className="relative p-2 rounded-full dark:bg-white/5 bg-slate-50 border dark:border-white/5 border-slate-200">
                 <ShoppingCart size={14} className="dark:text-neutral-300 text-slate-600" />
@@ -220,7 +220,7 @@ export function PhoneMockup() {
             <div className="flex-1 p-3 overflow-y-auto space-y-3 flex flex-col justify-end">
               {/* Recipient Welcome Bubble */}
               <div className="p-2.5 rounded-2xl rounded-tl-none dark:bg-neutral-900 bg-white dark:text-white text-slate-800 max-w-[85%] self-start border dark:border-white/5 border-slate-200 text-[10px] leading-relaxed shadow-sm">
-                👋 Hello! Welcome to Nordic Design Co. Send us your order request and our system will confirm it instantly!
+                👋 Hello! Welcome to Artisan Design Co. Send us your order request and our system will confirm it instantly!
               </div>
 
               {/* Message Typing / Sent Bubble */}
@@ -267,7 +267,7 @@ export function PhoneMockup() {
               <h3 className="text-sm font-bold dark:text-white text-slate-900 mt-1">Order Confirmed!</h3>
               <p className="text-[10px] dark:text-neutral-400 text-slate-500 max-w-[200px] mx-auto mt-2 leading-relaxed">
                 {isOrderAccepted
-                  ? "Nordic Design Co. accepted your order. A digital invoice has been dispatched via WhatsApp."
+                  ? "Artisan Design Co. accepted your order. A digital invoice has been dispatched via WhatsApp."
                   : "Processing your order via Chatzo commerce router..."}
               </p>
             </div>

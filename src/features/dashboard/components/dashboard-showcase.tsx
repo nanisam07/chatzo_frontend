@@ -33,16 +33,12 @@ export function DashboardShowcase() {
   const [ordersCount, setOrdersCount] = useState(385);
   const [conversionRate, setConversionRate] = useState(94.2);
   const [aiActive, setAiActive] = useState(false);
-  const [liveOrders, setLiveOrders] = useState<Order[]>([
-    { id: "O-8426", name: "Sarah Connor", items: "1x Minimalist Flask", amount: 49.0, status: "incoming", time: "Just now" },
-    { id: "O-8425", name: "David M.", items: "2x Nordic Coffee Cup", amount: 48.0, status: "approved", time: "3m ago" },
-    { id: "O-8424", name: "Emily R.", items: "1x Matte Tumbler", amount: 35.0, status: "approved", time: "12m ago" },
-  ]);
+  const [liveOrders, setLiveOrders] = useState<Order[]>([]);
 
   // Simulate new incoming orders arriving automatically
   useEffect(() => {
     const names = ["Marcus A.", "Elena Rostova", "John Doe", "Sophia L.", "Kenji Tanaka"];
-    const items = ["1x Minimalist Flask", "1x Nordic Coffee Cup", "2x Ceramic Mug", "1x Matte Tumbler"];
+    const items = ["1x Minimalist Flask", "1x Standard Coffee Cup", "2x Ceramic Mug", "1x Matte Tumbler"];
     const prices = [49.0, 24.0, 32.0, 35.0];
 
     const interval = setInterval(() => {
@@ -79,11 +75,7 @@ export function DashboardShowcase() {
     setOrdersCount(385);
     setConversionRate(94.2);
     setAiActive(false);
-    setLiveOrders([
-      { id: "O-8426", name: "Sarah Connor", items: "1x Minimalist Flask", amount: 49.0, status: "incoming", time: "Just now" },
-      { id: "O-8425", name: "David M.", items: "2x Nordic Coffee Cup", amount: 48.0, status: "approved", time: "3m ago" },
-      { id: "O-8424", name: "Emily R.", items: "1x Matte Tumbler", amount: 35.0, status: "approved", time: "12m ago" },
-    ]);
+    setLiveOrders([]);
   };
 
   return (

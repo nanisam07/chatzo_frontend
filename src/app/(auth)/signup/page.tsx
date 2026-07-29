@@ -298,7 +298,7 @@ export default function SignupPage() {
                   <FloatingInput
                     id="fullName"
                     label="Full Name"
-                    placeholder="Sarah Jenkins"
+                    placeholder="Enter your name"
                     value={form.fullName}
                     onChange={setField("fullName")}
                     icon={<User size={16} />}
@@ -308,7 +308,7 @@ export default function SignupPage() {
                   <FloatingInput
                     id="bizName"
                     label="Business Name"
-                    placeholder="Nordic Coffee Roasters"
+                    placeholder="Enter your business name"
                     value={form.businessName}
                     onChange={setField("businessName")}
                     icon={<Building size={16} />}
@@ -319,7 +319,7 @@ export default function SignupPage() {
                     id="email"
                     label="Business Email"
                     type="email"
-                    placeholder="sarah@yourbrand.com"
+                    placeholder="Enter your email"
                     value={form.email}
                     onChange={setField("email")}
                     icon={<Mail size={16} />}

@@ -9,9 +9,10 @@ import {
   Plus,
   Send,
   Zap,
-  Calendar,
-  FileText,
   Search,
+  MessageSquare,
+  Wifi,
+  WifiOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,70 +32,72 @@ export function Topbar({
   const activeCategoryConfig = CATEGORIES_CONFIG[currentCategory] || CATEGORIES_CONFIG.retail;
   const { apiSyncStatus, profile } = useWorkspaceStore();
 
-  // Map dynamic tab IDs to user-friendly titles
+  const isConnected = apiSyncStatus === "Connected";
+
   const getTabTitle = () => {
     switch (currentTab) {
       case "overview":
-        return "Command Center";
+        return "Dashboard";
       case "my-shop":
-        return "Business Profile";
+        return "My Shop";
       case "branches":
-        return "Branches Directory";
+        return "Branches";
       case "staff":
-        return "Staff Roster";
+        return "Staff";
       case "hours":
-        return "Business Operating Hours";
+        return "Business Hours";
+      case "hardware":
+        return "Hardware & Printing";
       case "orders":
-        return "Orders Management";
+        return "Orders";
       case "products":
         return activeCategoryConfig.catalogLabel;
       case "categories":
-        return "Catalog Categories";
+        return "Categories";
       case "inventory":
-        return "Inventory Ledger";
+        return "Inventory";
       case "customers":
         return activeCategoryConfig.customersLabel;
       case "coupons":
         return "Coupons & Discounts";
       case "campaigns":
-        return "Marketing Campaigns";
+        return "Campaigns";
       case "broadcasts":
-        return "Broadcast Logs";
+        return "Broadcasts";
       case "chats":
         return "WhatsApp Inbox";
       case "reviews":
-        return "Customer Reviews";
+        return "Reviews";
       case "revenue":
-        return "Revenue Analytics";
+        return "Revenue";
       case "transactions":
-        return "Transactions Log";
+        return "Transactions";
       case "invoices":
-        return "Invoices Ledger";
+        return "Invoices";
       case "payouts":
-        return "Payout Settlements";
+        return "Payouts";
       case "ai-assistant":
-        return "AI Operations Workspace";
+        return "AI Assistant";
       case "settings":
-        return "Platform Settings";
+        return "Settings";
       default:
         return "Dashboard";
     }
   };
 
-  // Determine context-based Quick Action button
   const getQuickAction = () => {
     switch (currentTab) {
       case "overview":
-        return { label: "Trigger Broadcast", action: "send_broadcast", icon: <Send size={13} /> };
+        return { label: "Send Broadcast", action: "send_broadcast", icon: <Send size={13} /> };
       case "products":
         return {
-          label: `Add ${activeCategoryConfig.catalogLabel.slice(0, -1) || "Item"}`,
+          label: `Add ${activeCategoryConfig.catalogLabel.replace(/s$/, "") || "Item"}`,
           action: "add_catalog",
           icon: <Plus size={13} />,
         };
       case "customers":
         return {
-          label: `Add ${activeCategoryConfig.customersLabel.slice(0, -1) || "Client"}`,
+          label: `Add ${activeCategoryConfig.customersLabel?.replace(/s$/, "") || "Customer"}`,
           action: "add_customer",
           icon: <Plus size={13} />,
         };
@@ -113,81 +116,108 @@ export function Topbar({
 
   const quickAction = getQuickAction();
 
+  const ownerInitials = profile.ownerName
+    ? profile.ownerName
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "?";
+
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 bg-white px-6 sticky top-0 z-20 text-[#111827] shadow-sm">
-      {/* Left section: Hamburger + Dynamic breadcrumbs */}
-      <div className="flex items-center gap-4">
+    <header className="flex h-[62px] shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-5 sticky top-0 z-20 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+      {/* Left — hamburger + breadcrumb */}
+      <div className="flex items-center gap-3">
         <button
           onClick={onToggleMobile}
-          className="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 lg:hidden cursor-pointer"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden transition-all cursor-pointer"
           title="Open Menu"
         >
-          <Menu size={20} />
+          <Menu size={19} />
         </button>
 
         <div className="hidden sm:flex flex-col">
-          <div className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-            <span>Workspace</span>
-            <span>/</span>
-            <span>{profile.businessName}</span>
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.1em]">
+            <span>Dashboard</span>
+            {currentTab !== "overview" && (
+              <>
+                <span className="text-slate-300">/</span>
+                <span>{getTabTitle()}</span>
+              </>
+            )}
           </div>
-          <h1 className="text-sm font-black text-gray-900">{getTabTitle()}</h1>
+          <h1 className="text-[15px] font-black text-slate-900 leading-tight tracking-tight">
+            {getTabTitle()}
+          </h1>
         </div>
-        <h1 className="text-xs font-black text-gray-900 sm:hidden">{getTabTitle()}</h1>
+        <h1 className="text-sm font-black text-slate-900 sm:hidden">{getTabTitle()}</h1>
       </div>
 
-      {/* Center Search Box */}
-      <div className="hidden md:flex relative max-w-xs w-64">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+      {/* Center — search */}
+      <div className="hidden md:flex relative max-w-[240px] w-full">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={13} />
         <input
           type="text"
-          placeholder="Search workspace..."
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 focus:bg-white transition-all font-medium"
+          placeholder="Search workspace…"
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-400 focus:bg-white transition-all font-medium"
         />
       </div>
 
-      {/* Right section: sync stats + context actions */}
-      <div className="flex items-center gap-3">
-        {/* WhatsApp sync indicator */}
-        <div className="hidden md:flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-1.5 border border-gray-200">
-          <div className="relative flex h-2 w-2">
-            <span className={cn(
-              "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
-              apiSyncStatus === "Connected" ? "bg-green-500" : "bg-red-500"
-            )}></span>
-            <span className={cn(
-              "relative inline-flex rounded-full h-2 w-2",
-              apiSyncStatus === "Connected" ? "bg-green-500" : "bg-red-500"
-            )}></span>
+      {/* Right — status + actions */}
+      <div className="flex items-center gap-2.5">
+        {/* WhatsApp connection status */}
+        <div
+          className={cn(
+            "hidden md:flex items-center gap-2 rounded-xl px-3 py-1.5 border text-[10px] font-black uppercase tracking-wider transition-all",
+            isConnected
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+              : "bg-red-50 border-red-200 text-red-600"
+          )}
+        >
+          <div className="relative flex h-2 w-2 shrink-0">
+            {isConnected && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
+            )}
+            <span
+              className={cn(
+                "relative inline-flex rounded-full h-2 w-2",
+                isConnected ? "bg-emerald-500" : "bg-red-500"
+              )}
+            />
           </div>
-          <span className={cn(
-            "text-[9px] font-black tracking-wider uppercase",
-            apiSyncStatus === "Connected" ? "text-green-600" : "text-red-500"
-          )}>
-            {apiSyncStatus === "Connected" ? "WhatsApp Connected" : "Connection Offline"}
-          </span>
+          {isConnected ? (
+            <>
+              <Wifi size={11} />
+              <span>WhatsApp Live</span>
+            </>
+          ) : (
+            <>
+              <WifiOff size={11} />
+              <span>Offline</span>
+            </>
+          )}
         </div>
 
-        {/* Dynamic Context Button */}
+        {/* Quick Action CTA */}
         {quickAction && (
           <button
             onClick={() => onActionTrigger?.(quickAction.action)}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 px-3.5 py-1.5 text-xs font-bold transition-all hover:shadow-[0_2px_8px_rgba(37,99,235,0.2)] cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 px-3.5 py-2 text-[12px] font-bold transition-all hover:shadow-lg hover:shadow-emerald-500/20 cursor-pointer active:scale-95"
           >
             {quickAction.icon}
-            <span>{quickAction.label}</span>
+            <span className="hidden sm:inline">{quickAction.label}</span>
           </button>
         )}
 
-        {/* Standard controls icons */}
-        <div className="flex items-center gap-1 border-l border-gray-200 pl-3">
-          <button className="relative rounded-xl p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-all cursor-pointer">
+        {/* Notification bell + avatar */}
+        <div className="flex items-center gap-1.5 border-l border-slate-200 pl-2.5">
+          <button className="relative rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-all cursor-pointer">
             <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-blue-600" />
           </button>
 
-          <div className="relative h-8 w-8 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center font-bold text-blue-600 text-xs shadow-inner">
-            {profile.ownerName.split(" ").map(n => n[0]).join("")}
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-white text-[11px] shadow-sm ring-2 ring-white cursor-pointer">
+            {ownerInitials}
           </div>
         </div>
       </div>
