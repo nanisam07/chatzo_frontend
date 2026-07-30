@@ -133,5 +133,9 @@ export default function DashboardTabPage() {
     }
   };
 
-  return <div className="animate-fade-in">{renderTabContent()}</div>;
+  return (
+  <div className="p-10">
+    TEST PAGE
+  </div>
+);
 }
