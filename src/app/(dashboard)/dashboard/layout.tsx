@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { Topbar } from "@/components/dashboard/Topbar";
 import { CATEGORIES_CONFIG } from "@/lib/config/categories";
@@ -15,13 +15,34 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const {
     toast,
     showToast,
     hideToast,
     hydrateWorkspace,
+    connectWhatsApp,
   } = useWorkspaceStore();
+
+  useEffect(() => {
+    const code = searchParams?.get("code");
+    if (code) {
+      connectWhatsApp(code)
+        .then(() => {
+          // Clean parameters from address bar
+          const nextParams = new URLSearchParams(window.location.search);
+          nextParams.delete("code");
+          nextParams.delete("state");
+          const nextQuery = nextParams.toString();
+          router.replace(`${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`);
+        })
+        .catch((err) => {
+          console.error("Auto-connect from redirect code failed:", err);
+        });
+    }
+  }, [searchParams, connectWhatsApp, router]);
 
   // Extract category and tab parameters from route path
   const category = (params?.category as string) || "retail";

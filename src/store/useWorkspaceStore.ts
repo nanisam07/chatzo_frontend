@@ -439,7 +439,17 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       fetchWhatsAppStatus: async () => {
         try {
-          const res = await merchantApi.fetchWhatsAppStatus();
+          const res = (await merchantApi.fetchWhatsAppStatus()) as {
+            success: boolean;
+            connected: boolean;
+            wabaId?: string;
+            phoneNumberId?: string;
+            displayPhoneNumber?: string;
+            businessName?: string;
+            webhookStatus?: string;
+            cloudApiStatus?: string;
+            connectionStatus?: string;
+          };
           if (res.success) {
             set({ whatsappStatusDetails: res });
           }
@@ -450,7 +460,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       connectWhatsApp: async (code) => {
         try {
-          const res = await merchantApi.connectWhatsApp(code);
+          const res = (await merchantApi.connectWhatsApp(code)) as { success: boolean };
           if (res.success) {
             get().showToast("WhatsApp connected successfully", "success");
             await get().fetchWhatsAppStatus();
@@ -463,7 +473,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       disconnectWhatsApp: async () => {
         try {
-          const res = await merchantApi.disconnectWhatsApp();
+          const res = (await merchantApi.disconnectWhatsApp()) as { success: boolean };
           if (res.success) {
             get().showToast("WhatsApp disconnected successfully", "success");
             await get().fetchWhatsAppStatus();
@@ -476,7 +486,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       fetchChats: async (category) => {
         try {
-          const res = await merchantApi.fetchChats();
+          const res = (await merchantApi.fetchChats()) as { success: boolean; chats: ChatItem[] };
           if (res.success && res.chats) {
             set((state) => ({
               chats: {
