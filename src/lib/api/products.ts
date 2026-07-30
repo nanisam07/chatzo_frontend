@@ -20,7 +20,7 @@ export const productsApi = {
 
   async addProduct(
     category: string,
-    product: Omit<ProductItem, "id">
+    product: Omit<ProductItem, "id"> & { categoryId?: string }
   ): Promise<ProductItem> {
     const res = await api.post(`/merchant/products`, {
       category,
@@ -35,7 +35,7 @@ export const productsApi = {
   async updateProduct(
     category: string,
     id: string,
-    updates: Partial<ProductItem>
+    updates: Partial<ProductItem> & { categoryId?: string }
   ): Promise<ProductItem> {
     const res = await api.put(`/merchant/products/${id}`, {
       category,

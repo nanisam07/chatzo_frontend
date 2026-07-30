@@ -17,13 +17,18 @@ export default function DashboardLayout({
   const params = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const {
-  toast,
-  showToast,
-  hideToast,
-} = useWorkspaceStore();
+    toast,
+    showToast,
+    hideToast,
+    hydrateWorkspace,
+  } = useWorkspaceStore();
 
   // Extract category and tab parameters from route path
   const category = (params?.category as string) || "retail";
+
+  useEffect(() => {
+    hydrateWorkspace(category);
+  }, [category, hydrateWorkspace]);
   const tab = (params?.tab as string) || "overview";
 
   // Validate active category

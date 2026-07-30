@@ -2322,11 +2322,24 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
 /* ─── 9. CATEGORIES TAB ─────────────────────────────────── */
 /* ───────────────────────────────────────────────────────── */
 export function CategoriesTab({ category }: WidgetTabProps) {
-  const [list] = useState([
-    { name: "Starter Appetizers", count: 8 },
-    { name: "Executive Main Courses", count: 14 },
-    { name: "Artisan Dessert Trays", count: 6 },
-  ]);
+  const { categories, addCategory } = useWorkspaceStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const [name, setName] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name) return;
+    try {
+      await addCategory(category, name);
+      setName("");
+      setIsOpen(false);
+      showToast("Category created successfully!", "success");
+    } catch (err) {
+      // Error handled by store toast
+    }
+  };
+
+  const list = categories[category] || [];
 
   return (
     <PageWrapper
@@ -2335,16 +2348,58 @@ export function CategoriesTab({ category }: WidgetTabProps) {
       category={category}
     >
       <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-6 space-y-6">
-        <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">Menu Groups</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {list.map((c, idx) => (
-            <div key={idx} className="p-4 rounded-2xl border border-slate-200/80 bg-white space-y-1.5 shadow-xs hover:-translate-y-0.5 hover:shadow-sm transition-all">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Category Segment</span>
-              <h4 className="text-sm font-bold text-slate-900">{c.name}</h4>
-              <p className="text-xs text-emerald-600 font-bold">{c.count} items configured</p>
-            </div>
-          ))}
+        <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+          <h3 className="text-base font-bold text-slate-900">Menu Groups</h3>
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-9 px-3.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus size={15} />
+            <span>Add Category</span>
+          </button>
         </div>
+
+        {isOpen && (
+          <form onSubmit={handleSubmit} className="p-4 rounded-2xl border border-slate-200 bg-slate-50/50 flex gap-3 items-center">
+            <input
+              type="text"
+              placeholder="Category Name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none flex-1"
+            />
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="h-9 px-4 border border-slate-200 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button type="submit" className="h-9 px-4 bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-emerald-700 transition-colors">
+              Save Category
+            </button>
+          </form>
+        )}
+
+        {list.length === 0 ? (
+          <EmptyState
+            icon={<Layers size={22} />}
+            title="No Categories Yet"
+            description="Create categories to organize your menu catalog structure."
+            size="sm"
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {list.map((c, idx) => (
+              <div key={c.id || idx} className="p-4 rounded-2xl border border-slate-200/80 bg-white space-y-1.5 shadow-xs hover:-translate-y-0.5 hover:shadow-sm transition-all">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Category Segment</span>
+                <h4 className="text-sm font-bold text-slate-900">{c.name}</h4>
+                <p className="text-xs text-emerald-600 font-bold">{(c.products?.length || 0)} items configured</p>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </PageWrapper>
   );

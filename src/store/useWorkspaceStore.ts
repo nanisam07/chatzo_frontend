@@ -1,7 +1,17 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { productsApi, ProductItem } from "@/lib/api/products";
-import { SupportTicket, PrinterDevice } from "@/lib/types/merchant";
+import {
+  merchantApi,
+  CategoryItem,
+  OrderItem,
+  CustomerItem,
+  CouponItem,
+  StaffItem,
+  PrinterDevice,
+  SupportTicket,
+  DeliveryZone,
+} from "@/lib/api/merchant";
 
 export interface WorkspaceProfile {
   businessName: string;
@@ -30,17 +40,8 @@ export interface WorkspaceProfile {
   email: string;
   phone: string;
   timezone: string;
-  businessHours: Record<string, string>;
   businessVerificationStatus?: "Verified" | "Unverified";
-}
-
-export interface OrderItem {
-  id: string;
-  customer: string;
-  phone: string;
-  total: number;
-  status: string;
-  date: string;
+  businessHours: Record<string, string>;
 }
 
 export interface ChatMessage {
@@ -57,31 +58,6 @@ export interface ChatItem {
   time: string;
   unread: number;
   messages: ChatMessage[];
-}
-
-export interface CustomerItem {
-  id: string;
-  name: string;
-  phone: string;
-  totalSpend: number;
-}
-
-export interface CouponItem {
-  id: string;
-  code: string;
-  discount: string;
-  expiry: string;
-  usage: number;
-  status: "Active" | "Expired";
-}
-
-export interface StaffItem {
-  id: string;
-  name: string;
-  role: string;
-  email: string;
-  phone: string;
-  status: "Active" | "Inactive";
 }
 
 export interface BranchItem {
@@ -123,16 +99,26 @@ export interface ReviewItem {
   date: string;
 }
 
-export interface DeliveryZone {
-  id: string;
-  name: string;
-  charge: number;
-  minOrder: number;
-}
-
-export interface ToastState {
-  message: string;
-  type: "success" | "error" | "info";
+interface ProfileResponse {
+  user?: {
+    id: string;
+    fullName: string;
+    email: string;
+    role: string;
+    whatsappAccount?: { connectionStatus: string } | null;
+    merchantProfile?: {
+      id: string;
+      businessName: string;
+      businessCategory: string;
+      logo?: string;
+      banner?: string;
+      country?: string;
+      currency?: string;
+      phone?: string;
+      timezone?: string;
+      businessHours?: Record<string, string>;
+    } | null;
+  };
 }
 
 export interface WorkspaceStore {
@@ -140,51 +126,80 @@ export interface WorkspaceStore {
   isLoading: boolean;
   currentCategory: string;
   apiSyncStatus: string;
-  toast: ToastState | null;
+  toast: { message: string; type: "success" | "error" | "info" } | null;
 
   // Domain Entities
   profile: WorkspaceProfile;
   products: Record<string, ProductItem[]>;
+  categories: Record<string, CategoryItem[]>;
   orders: Record<string, OrderItem[]>;
-  chats: Record<string, ChatItem[]>;
   customers: Record<string, CustomerItem[]>;
   coupons: CouponItem[];
   staff: StaffItem[];
   branches: BranchItem[];
-  loginLogs: LoginLogItem[];
   printers: PrinterDevice[];
   deliveryZones: DeliveryZone[];
+  tickets: SupportTicket[];
+
+  // Local-only entities (with empty state)
+  chats: Record<string, ChatItem[]>;
+  loginLogs: LoginLogItem[];
   transactions: TransactionItem[];
   payouts: PayoutItem[];
   reviews: ReviewItem[];
-  tickets: SupportTicket[];
   onboardingChecklists: Record<string, string[]>;
 
-  // Common UI & Profile Actions
+  // Actions
   setLoading: (loading: boolean) => void;
   setCurrentCategory: (category: string) => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
   hideToast: () => void;
   updateProfile: (updates: Partial<WorkspaceProfile>) => void;
-  toggleOnboardingStep: (category: string, step: string) => void;
-  hydrateWorkspace: () => void;
+  hydrateWorkspace: (category: string) => Promise<void>;
 
-  // Products Backend Async Actions
+  // Local-only Actions
+  toggleOnboardingStep: (category: string, step: string) => void;
+  togglePrinter: (id: string) => void;
+  addMessageToChat: (category: string, chatId: string, message: ChatMessage) => void;
+  addBranch: (branch: Omit<BranchItem, "id">) => void;
+
+  // Products Backend Actions
   fetchProducts: (category: string) => Promise<void>;
   addItem: (category: string, item: Omit<ProductItem, "id">) => Promise<ProductItem>;
   updateItem: (category: string, id: string, updates: Partial<ProductItem>) => Promise<void>;
   deleteItem: (category: string, id: string) => Promise<void>;
 
-  // Additional Dashboard Actions
-  updateOrderStatus: (category: string, orderId: string, status: string) => void;
-  addDeliveryZone: (zone: Omit<DeliveryZone, "id">) => void;
-  addBranch: (branch: Omit<BranchItem, "id">) => void;
-  addStaff: (staffMember: Omit<StaffItem, "id">) => void;
-  addPrinter: (printer: Omit<PrinterDevice, "id" | "status">) => void;
-  togglePrinter: (id: string) => void;
-  addCoupon: (coupon: Omit<CouponItem, "id" | "usage" | "status">) => void;
-  addTicket: (ticket: Omit<SupportTicket, "id" | "status">) => void;
-  addMessageToChat: (category: string, chatId: string, message: ChatMessage) => void;
+  // Categories Backend Actions
+  fetchCategories: (category: string) => Promise<void>;
+  addCategory: (category: string, name: string) => Promise<CategoryItem>;
+
+  // Orders Backend Actions
+  fetchOrders: (category: string) => Promise<void>;
+  updateOrderStatus: (category: string, orderId: string, status: string) => Promise<void>;
+
+  // Customers Backend Actions
+  fetchCustomers: () => Promise<void>;
+
+  // Coupons Backend Actions
+  fetchCoupons: () => Promise<void>;
+  addCoupon: (coupon: Omit<CouponItem, "id" | "usage" | "status">) => Promise<void>;
+
+  // Staff Backend Actions
+  fetchStaff: () => Promise<void>;
+  addStaff: (staffMember: Omit<StaffItem, "id">) => Promise<void>;
+
+  // Printers Backend Actions
+  fetchPrinters: () => Promise<void>;
+  addPrinter: (printer: Omit<PrinterDevice, "id" | "status">) => Promise<void>;
+  deletePrinter: (id: string) => Promise<void>;
+
+  // Tickets Backend Actions
+  fetchTickets: () => Promise<void>;
+  addTicket: (ticket: Omit<SupportTicket, "id" | "status">) => Promise<void>;
+
+  // Delivery Zones Backend Actions
+  fetchDeliveryZones: () => Promise<void>;
+  addDeliveryZone: (zone: Omit<DeliveryZone, "id">) => Promise<void>;
 }
 
 export const useWorkspaceStore = create<WorkspaceStore>()(
@@ -196,35 +211,35 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       apiSyncStatus: "https://api.chatzo.io/v1/meta/webhook",
       toast: null,
 
-      // Default Profile State
+      // Empty Profile State (hydrated dynamically)
       profile: {
-        businessName: "Chatzo Demo Store",
-        businessCategory: "retail",
+        businessName: "",
+        businessCategory: "",
         subscriptionPlan: "Pro",
-        whatsappStatus: "Connected",
-        ownerName: "Merchant Owner",
+        whatsappStatus: "Disconnected",
+        ownerName: "",
         businessStatus: "Online",
-        invoiceLogo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=120&q=80",
+        invoiceLogo: "",
         invoiceColor: "#2563EB",
         productTaxPercent: 5,
         deliveryCharges: 40,
         freeDeliveryThreshold: 500,
         deliveryTime: "30-45 mins",
         deliveryRadius: 8,
-        website: "https://chatzo.io/store/demo",
-        storeUsername: "demostore",
+        website: "",
+        storeUsername: "",
         storeRating: 4.8,
-        ordersCount: 124,
-        merchantId: "MERCH-99201",
-        workspaceId: "WS-88301",
-        businessLogo: "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=120&q=80",
-        businessBanner: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80",
-        country: "India",
+        ordersCount: 0,
+        merchantId: "",
+        workspaceId: "",
+        businessLogo: "",
+        businessBanner: "",
+        country: "",
         currency: "INR (₹)",
-        email: "support@chatzo.io",
-        phone: "+91 98765 43210",
-        timezone: "Asia/Kolkata (IST)",
-        businessVerificationStatus: "Verified",
+        email: "",
+        phone: "",
+        timezone: "",
+        businessVerificationStatus: "Unverified",
         businessHours: {
           monday: "09:00 - 22:00",
           tuesday: "09:00 - 22:00",
@@ -236,75 +251,25 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         },
       },
 
-      // Entity Collections
+      // Empty Entity Collections
       products: {},
-      orders: {
-        retail: [
-          { id: "ORD-1001", customer: "Rahul Sharma", phone: "+91 9876500001", total: 1299, status: "Pending", date: "Today 10:30 AM" },
-          { id: "ORD-1002", customer: "Priya Patel", phone: "+91 9876500002", total: 2499, status: "Accepted", date: "Today 11:15 AM" },
-        ],
-      },
-      chats: {
-        retail: [
-          {
-            id: "CHAT-1",
-            name: "Rahul Sharma",
-            phone: "+91 9876500001",
-            lastMessage: "Hi, is ORD-1001 confirmed?",
-            time: "10:32 AM",
-            unread: 1,
-            messages: [
-              { sender: "customer", text: "Hi, is ORD-1001 confirmed?", time: "10:32 AM" },
-            ],
-          },
-        ],
-      },
-      customers: {
-        retail: [
-          { id: "CUST-1", name: "Rahul Sharma", phone: "+91 9876500001", totalSpend: 5400 },
-          { id: "CUST-2", name: "Priya Patel", phone: "+91 9876500002", totalSpend: 12800 },
-        ],
-      },
-      coupons: [
-        { id: "CPN-1", code: "WELCOME10", discount: "10% OFF", expiry: "31 Dec 2026", usage: 45, status: "Active" },
-      ],
-      staff: [
-        { id: "STF-1", name: "Anish Kumar", role: "Store Manager", email: "anish@chatzo.io", phone: "+91 9811122233", status: "Active" },
-      ],
-      branches: [
-        { id: "BR-1", name: "Main Store", address: "Connaught Place, New Delhi", phone: "+91 11 23456789", isActive: true },
-      ],
-      loginLogs: [
-        { id: "LOG-1", staffName: "Anish Kumar", loginTime: "Today 08:55 AM", ipAddress: "192.168.1.45", device: "Chrome / Windows" },
-      ],
-      printers: [
-        {
-          id: "PRN-1", name: "Counter Receipt Station", type: "Receipt", ipAddress: "192.168.1.200", paperWidth: "80mm", status: "Online",
-          latency: 0
-        },
-      ],
-      deliveryZones: [
-        { id: "DZ-1", name: "Inner Circle Radius", charge: 30, minOrder: 300 },
-      ],
-      transactions: [
-        { id: "TXN-8801", amount: 1299, type: "Razorpay Online", date: "Today 10:30 AM", status: "Settled" },
-        { id: "TXN-8802", amount: 2499, type: "Razorpay Online", date: "Today 11:15 AM", status: "Processing" },
-      ],
-      payouts: [
-        { id: "PAY-501", bankAccount: "HDFC Bank (**** 4892)", amount: 8400, status: "Settled" },
-      ],
-      reviews: [
-        { id: "REV-1", customer: "Priya Patel", rating: 5, comment: "Super fast WhatsApp checkout and delivery!", date: "Yesterday" },
-      ],
-      tickets: [
-        {
-          id: "TCK-101", category: "WhatsApp API", priority: "Medium", subject: "Webhook latency inquiry", description: "Slight delay during peak evening hours.", status: "Open",
-          createdAt: ""
-        },
-      ],
-      onboardingChecklists: {
-        retail: ["Connect WhatsApp", "Add Category"],
-      },
+      categories: {},
+      orders: {},
+      customers: {},
+      coupons: [],
+      staff: [],
+      branches: [],
+      printers: [],
+      deliveryZones: [],
+      tickets: [],
+
+      // Local-only empty collections
+      chats: {},
+      loginLogs: [],
+      transactions: [],
+      payouts: [],
+      reviews: [],
+      onboardingChecklists: {},
 
       // UI Actions
       setLoading: (loading) => set({ isLoading: loading }),
@@ -317,6 +282,68 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           profile: { ...state.profile, ...updates },
         })),
 
+      // Complete Hydration Action
+      hydrateWorkspace: async (category: string) => {
+        set({ isLoading: true });
+        try {
+          // Fetch Profile
+          const profileData = (await merchantApi.fetchProfile()) as ProfileResponse;
+          if (profileData && profileData.user) {
+            const user = profileData.user;
+            set({
+              profile: {
+                businessName: user.merchantProfile?.businessName || "",
+                businessCategory: user.merchantProfile?.businessCategory || "",
+                subscriptionPlan: "Pro",
+                whatsappStatus: user.whatsappAccount ? "Connected" : "Disconnected",
+                ownerName: user.fullName || "",
+                businessStatus: "Online",
+                invoiceLogo: user.merchantProfile?.logo || "",
+                invoiceColor: "#2563EB",
+                productTaxPercent: 5,
+                deliveryCharges: 40,
+                freeDeliveryThreshold: 500,
+                deliveryTime: "30-45 mins",
+                deliveryRadius: 8,
+                website: `https://chatzo.io/store/${user.merchantProfile?.id || ""}`,
+                storeUsername: user.merchantProfile?.businessName?.toLowerCase().replace(/\s+/g, "") || "",
+                storeRating: 4.8,
+                ordersCount: 0,
+                merchantId: user.id,
+                workspaceId: user.merchantProfile?.id || "",
+                businessLogo: user.merchantProfile?.logo || "",
+                businessBanner: user.merchantProfile?.banner || "",
+                country: user.merchantProfile?.country || "India",
+                currency: user.merchantProfile?.currency || "INR (₹)",
+                email: user.email || "",
+                phone: user.merchantProfile?.phone || "",
+                timezone: user.merchantProfile?.timezone || "Asia/Kolkata (IST)",
+                businessVerificationStatus: "Verified",
+                businessHours: user.merchantProfile?.businessHours || get().profile.businessHours,
+              },
+            });
+          }
+
+          // Hydrate other collections
+          await Promise.all([
+            get().fetchCategories(category),
+            get().fetchProducts(category),
+            get().fetchOrders(category),
+            get().fetchCustomers(),
+            get().fetchCoupons(),
+            get().fetchStaff(),
+            get().fetchPrinters(),
+            get().fetchTickets(),
+            get().fetchDeliveryZones(),
+          ]);
+        } catch (error) {
+          console.error("Workspace hydration failed:", error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      // Local Actions
       toggleOnboardingStep: (category, step) =>
         set((state) => {
           const current = state.onboardingChecklists[category] || [];
@@ -331,11 +358,39 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           };
         }),
 
-      hydrateWorkspace: () => {
-        // Hydration logic hook
-      },
+      togglePrinter: (id) =>
+        set((state) => ({
+          printers: state.printers.map((p) =>
+            p.id === id ? { ...p, status: p.status === "Online" ? "Offline" : "Online" } : p
+          ),
+        })),
 
-      // Products Backend Integration
+      addMessageToChat: (category, chatId, message) =>
+        set((state) => ({
+          chats: {
+            ...state.chats,
+            [category]: (state.chats[category] || []).map((c) =>
+              c.id === chatId
+                ? {
+                    ...c,
+                    lastMessage: message.text,
+                    time: message.time,
+                    messages: [...c.messages, message],
+                  }
+                : c
+            ),
+          },
+        })),
+
+      addBranch: (branch) =>
+        set((state) => ({
+          branches: [
+            ...state.branches,
+            { ...branch, id: `BR-${Date.now().toString().slice(-4)}` },
+          ],
+        })),
+
+      // Products actions
       fetchProducts: async (category: string) => {
         try {
           const fetchedProducts = await productsApi.fetchProducts(category);
@@ -352,7 +407,29 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       addItem: async (category: string, item: Omit<ProductItem, "id">) => {
         try {
-          const createdProduct = await productsApi.addProduct(category, item);
+          let categoryId: string | undefined = undefined;
+
+          // Auto-resolve or create category based on secondary string (Category Segment name)
+          if (item.secondary) {
+            const currentCats = get().categories[category] || [];
+            let matchedCat = currentCats.find((c) => c.name === item.secondary);
+            if (!matchedCat) {
+              matchedCat = await merchantApi.addCategory(category, item.secondary);
+              set((state) => ({
+                categories: {
+                  ...state.categories,
+                  [category]: [...(state.categories[category] || []), matchedCat!],
+                },
+              }));
+            }
+            categoryId = matchedCat.id;
+          }
+
+          const createdProduct = await productsApi.addProduct(category, {
+            ...item,
+            categoryId,
+          });
+
           set((state) => ({
             products: {
               ...state.products,
@@ -368,7 +445,28 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       updateItem: async (category: string, id: string, updates: Partial<ProductItem>) => {
         try {
-          const updated = await productsApi.updateProduct(category, id, updates);
+          let categoryId: string | undefined = undefined;
+
+          if (updates.secondary) {
+            const currentCats = get().categories[category] || [];
+            let matchedCat = currentCats.find((c) => c.name === updates.secondary);
+            if (!matchedCat) {
+              matchedCat = await merchantApi.addCategory(category, updates.secondary);
+              set((state) => ({
+                categories: {
+                  ...state.categories,
+                  [category]: [...(state.categories[category] || []), matchedCat!],
+                },
+              }));
+            }
+            categoryId = matchedCat.id;
+          }
+
+          const updated = await productsApi.updateProduct(category, id, {
+            ...updates,
+            ...(categoryId ? { categoryId } : {}),
+          });
+
           set((state) => ({
             products: {
               ...state.products,
@@ -398,114 +496,221 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         }
       },
 
-      // Additional Domain Actions
-      updateOrderStatus: (category, orderId, status) =>
-        set((state) => ({
-          orders: {
-            ...state.orders,
-            [category]: (state.orders[category] || []).map((o) =>
-              o.id === orderId ? { ...o, status } : o
-            ),
-          },
-        })),
-
-      addDeliveryZone: (zone) =>
-        set((state) => ({
-          deliveryZones: [
-            ...state.deliveryZones,
-            { ...zone, id: `DZ-${Date.now().toString().slice(-4)}` },
-          ],
-        })),
-
-      addBranch: (branch) =>
-        set((state) => ({
-          branches: [
-            ...state.branches,
-            { ...branch, id: `BR-${Date.now().toString().slice(-4)}` },
-          ],
-        })),
-
-      addStaff: (staffMember) =>
-        set((state) => ({
-          staff: [
-            ...state.staff,
-            { ...staffMember, id: `STF-${Date.now().toString().slice(-4)}` },
-          ],
-        })),
-
-      addPrinter: (printer) =>
-        set((state) => ({
-          printers: [
-            ...state.printers,
-            { ...printer, id: `PRN-${Date.now().toString().slice(-4)}`, status: "Online" },
-          ],
-        })),
-
-      togglePrinter: (id) =>
-        set((state) => ({
-          printers: state.printers.map((p) =>
-            p.id === id ? { ...p, status: p.status === "Online" ? "Offline" : "Online" } : p
-          ),
-        })),
-
-      addCoupon: (coupon) =>
-        set((state) => ({
-          coupons: [
-            ...state.coupons,
-            {
-              ...coupon,
-              id: `CPN-${Date.now().toString().slice(-4)}`,
-              usage: 0,
-              status: "Active",
+      // Categories actions
+      fetchCategories: async (category: string) => {
+        try {
+          const cats = await merchantApi.fetchCategories(category);
+          set((state) => ({
+            categories: {
+              ...state.categories,
+              [category]: cats,
             },
-          ],
-        })),
+          }));
+        } catch (error) {
+          console.error("Failed to fetch categories:", error);
+        }
+      },
 
-      addTicket: (ticket) =>
-        set((state) => ({
-          tickets: [
-            ...state.tickets,
-            {
-              ...ticket,
-              id: `TCK-${Date.now().toString().slice(-4)}`,
-              status: "Open",
+      addCategory: async (category: string, name: string) => {
+        try {
+          const newCat = await merchantApi.addCategory(category, name);
+          set((state) => ({
+            categories: {
+              ...state.categories,
+              [category]: [...(state.categories[category] || []), newCat],
             },
-          ],
-        })),
+          }));
+          return newCat;
+        } catch (error) {
+          get().showToast("Failed to create category on backend", "error");
+          throw error;
+        }
+      },
 
-      addMessageToChat: (category, chatId, message) =>
-        set((state) => ({
-          chats: {
-            ...state.chats,
-            [category]: (state.chats[category] || []).map((c) =>
-              c.id === chatId
-                ? {
-                    ...c,
-                    lastMessage: message.text,
-                    time: message.time,
-                    messages: [...c.messages, message],
-                  }
-                : c
-            ),
-          },
-        })),
+      // Orders actions
+      fetchOrders: async (category: string) => {
+        try {
+          const ords = await merchantApi.fetchOrders(category);
+          set((state) => ({
+            orders: {
+              ...state.orders,
+              [category]: ords,
+            },
+          }));
+        } catch (error) {
+          console.error("Failed to fetch orders:", error);
+        }
+      },
+
+      updateOrderStatus: async (category: string, orderId: string, status: string) => {
+        try {
+          await merchantApi.updateOrderStatus(orderId, status);
+          set((state) => ({
+            orders: {
+              ...state.orders,
+              [category]: (state.orders[category] || []).map((o) =>
+                o.id === orderId ? { ...o, status } : o
+              ),
+            },
+          }));
+        } catch (error) {
+          get().showToast("Failed to update order status", "error");
+          throw error;
+        }
+      },
+
+      // Customers actions
+      fetchCustomers: async () => {
+        try {
+          const custs = await merchantApi.fetchCustomers();
+          // Populate customers for current category (represented as "retail")
+          set((state) => ({
+            customers: {
+              ...state.customers,
+              [state.currentCategory]: custs,
+            },
+          }));
+        } catch (error) {
+          console.error("Failed to fetch customers:", error);
+        }
+      },
+
+      // Coupons actions
+      fetchCoupons: async () => {
+        try {
+          const cps = await merchantApi.fetchCoupons();
+          set({ coupons: cps });
+        } catch (error) {
+          console.error("Failed to fetch coupons:", error);
+        }
+      },
+
+      addCoupon: async (coupon) => {
+        try {
+          const newCoupon = await merchantApi.addCoupon({
+            code: coupon.code,
+            discount: coupon.discount,
+            expiry: coupon.expiry,
+          });
+          set((state) => ({
+            coupons: [...state.coupons, newCoupon],
+          }));
+        } catch (error) {
+          get().showToast("Failed to create coupon on backend", "error");
+          throw error;
+        }
+      },
+
+      // Staff actions
+      fetchStaff: async () => {
+        try {
+          const st = await merchantApi.fetchStaff();
+          set({ staff: st });
+        } catch (error) {
+          console.error("Failed to fetch staff:", error);
+        }
+      },
+
+      addStaff: async (staffMember) => {
+        try {
+          const newStaff = await merchantApi.addStaff(staffMember);
+          set((state) => ({
+            staff: [...state.staff, newStaff],
+          }));
+        } catch (error) {
+          get().showToast("Failed to add staff member on backend", "error");
+          throw error;
+        }
+      },
+
+      // Printers actions
+      fetchPrinters: async () => {
+        try {
+          const prs = await merchantApi.fetchPrinters();
+          set({ printers: prs });
+        } catch (error) {
+          console.error("Failed to fetch printers:", error);
+        }
+      },
+
+      addPrinter: async (printer) => {
+        try {
+          const newPrinter = await merchantApi.addPrinter({
+            ...printer,
+            latency: 0,
+          });
+          set((state) => ({
+            printers: [...state.printers, newPrinter],
+          }));
+        } catch (error) {
+          get().showToast("Failed to add printer on backend", "error");
+          throw error;
+        }
+      },
+
+      deletePrinter: async (id) => {
+        try {
+          await merchantApi.deletePrinter(id);
+          set((state) => ({
+            printers: state.printers.filter((p) => p.id !== id),
+          }));
+        } catch (error) {
+          get().showToast("Failed to delete printer from backend", "error");
+          throw error;
+        }
+      },
+
+      // Tickets actions
+      fetchTickets: async () => {
+        try {
+          const tks = await merchantApi.fetchTickets();
+          set({ tickets: tks });
+        } catch (error) {
+          console.error("Failed to fetch tickets:", error);
+        }
+      },
+
+      addTicket: async (ticket) => {
+        try {
+          const newTicket = await merchantApi.addTicket(ticket);
+          set((state) => ({
+            tickets: [...state.tickets, newTicket],
+          }));
+        } catch (error) {
+          get().showToast("Failed to create ticket on backend", "error");
+          throw error;
+        }
+      },
+
+      // Delivery Zones actions
+      fetchDeliveryZones: async () => {
+        try {
+          const zones = await merchantApi.fetchDeliveryZones();
+          set({ deliveryZones: zones });
+        } catch (error) {
+          console.error("Failed to fetch delivery zones:", error);
+        }
+      },
+
+      addDeliveryZone: async (zone) => {
+        try {
+          const newZone = await merchantApi.addDeliveryZone(zone);
+          set((state) => ({
+            deliveryZones: [...state.deliveryZones, newZone],
+          }));
+        } catch (error) {
+          get().showToast("Failed to add delivery zone on backend", "error");
+          throw error;
+        }
+      },
     }),
     {
       name: "chatzo-workspace-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        products: state.products,
-        profile: state.profile,
-        onboardingChecklists: state.onboardingChecklists,
-        orders: state.orders,
-        chats: state.chats,
-        customers: state.customers,
-        coupons: state.coupons,
-        staff: state.staff,
+        // Keep onboardingChecklist and local-only branches persisted
         branches: state.branches,
-        printers: state.printers,
-        deliveryZones: state.deliveryZones,
-        tickets: state.tickets,
+        onboardingChecklists: state.onboardingChecklists,
       }),
     }
   )
