@@ -25,9 +25,9 @@ export function EmptyState({
   className,
 }: EmptyStateProps) {
   const sizeClasses = {
-    sm: { wrapper: "py-8 px-4", icon: "h-10 w-10 mb-3", title: "text-sm", desc: "text-xs", btn: "text-xs px-3 py-1.5" },
-    md: { wrapper: "py-14 px-6", icon: "h-14 w-14 mb-4", title: "text-base", desc: "text-sm", btn: "text-sm px-4 py-2" },
-    lg: { wrapper: "py-20 px-8", icon: "h-18 w-18 mb-5", title: "text-lg", desc: "text-sm", btn: "text-sm px-5 py-2.5" },
+    sm: { wrapper: "py-8 px-4", icon: "h-10 w-10 mb-2.5", title: "text-xs font-extrabold", desc: "text-[11px]", btn: "h-8 text-xs px-3" },
+    md: { wrapper: "py-12 px-6", icon: "h-12 w-12 mb-3.5", title: "text-sm font-extrabold", desc: "text-xs", btn: "h-9 text-xs px-4" },
+    lg: { wrapper: "py-16 px-8", icon: "h-16 w-16 mb-4", title: "text-base font-extrabold", desc: "text-xs", btn: "h-10 text-xs px-5" },
   };
 
   const s = sizeClasses[size];
@@ -35,7 +35,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center",
+        "flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-slate-200/80 bg-slate-50/40",
         s.wrapper,
         className
       )}
@@ -43,7 +43,7 @@ export function EmptyState({
       {/* Icon container */}
       <div
         className={cn(
-          "rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/60 flex items-center justify-center text-emerald-500 shadow-sm",
+          "rounded-2xl bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200/60 flex items-center justify-center text-emerald-600 shadow-2xs shrink-0",
           s.icon
         )}
       >
@@ -51,10 +51,10 @@ export function EmptyState({
       </div>
 
       {/* Text */}
-      <h3 className={cn("font-bold text-gray-900 tracking-tight", s.title)}>
+      <h3 className={cn("text-slate-900 tracking-tight", s.title)}>
         {title}
       </h3>
-      <p className={cn("text-gray-400 font-medium mt-1 max-w-xs leading-relaxed", s.desc)}>
+      <p className={cn("text-slate-500 font-medium mt-1 max-w-xs leading-relaxed", s.desc)}>
         {description}
       </p>
 
@@ -63,7 +63,7 @@ export function EmptyState({
         <button
           onClick={action.onClick}
           className={cn(
-            "mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-600 text-white font-bold transition-all hover:bg-emerald-700 hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95",
+            "mt-4 inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 text-white font-bold shadow-xs transition-all hover:bg-emerald-700 active:scale-98 cursor-pointer",
             s.btn
           )}
         >
