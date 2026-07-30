@@ -58,7 +58,7 @@ const VALID_TABS = [
 
 export default function DashboardTabPage() {
   const params = useParams();
-  const { setCategory } = useWorkspaceStore();
+  const { setCurrentCategory } = useWorkspaceStore();
   
   const category = (params?.category as string) || "retail";
   const tab = (params?.tab as string) || "overview";
@@ -77,8 +77,8 @@ export default function DashboardTabPage() {
 
   // Synchronize active category with Zustand store
   useEffect(() => {
-    setCategory(category);
-  }, [category, setCategory]);
+    setCurrentCategory(category);
+  }, [category, setCurrentCategory]);
 
   const renderTabContent = () => {
     switch (tab) {
@@ -134,8 +134,8 @@ export default function DashboardTabPage() {
   };
 
   return (
-  <div className="p-10">
-    TEST PAGE
-  </div>
-);
+    <div className="min-h-screen bg-[#F6F8FB]">
+      {renderTabContent()}
+    </div>
+  );
 }
