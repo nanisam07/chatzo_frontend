@@ -161,7 +161,10 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   };
 
   const fallbackToManualOAuth = (appId: string) => {
-    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || "https://chatzo-backend.onrender.com/api/v1/whatsapp/connect";
+    const defaultRedirect = process.env.NEXT_PUBLIC_API_URL 
+      ? `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/connect` 
+      : "https://chatzo-backend-1yin.onrender.com/api/v1/whatsapp/connect";
+    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || defaultRedirect;
     const state = "test_code";
     
     const confirmMock = window.confirm(

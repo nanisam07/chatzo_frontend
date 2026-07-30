@@ -29,7 +29,10 @@ export default function DashboardLayout({
   useEffect(() => {
     const code = searchParams?.get("code");
     if (code) {
-      const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || "https://chatzo-backend.onrender.com/api/v1/whatsapp/connect";
+      const defaultRedirect = process.env.NEXT_PUBLIC_API_URL 
+        ? `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/connect` 
+        : "https://chatzo-backend-1yin.onrender.com/api/v1/whatsapp/connect";
+      const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || defaultRedirect;
       connectWhatsApp(code, redirectUri)
         .then(() => {
           // Clean parameters from address bar
