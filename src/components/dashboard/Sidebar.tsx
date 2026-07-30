@@ -95,7 +95,7 @@ export function Sidebar({
   ) => (
     <button
       onClick={onToggle}
-      className="group flex w-full items-center justify-between px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.12em] hover:text-emerald-700 transition-all duration-200 rounded-lg hover:bg-emerald-500/5 mt-1"
+      className="group flex w-full items-center justify-between px-3 py-2 text-[11.5px] font-black text-slate-400 uppercase tracking-[0.12em] hover:text-emerald-700 transition-all duration-200 rounded-lg hover:bg-emerald-500/5 mt-1"
     >
       <div className="flex items-center gap-2.5">
         <span className="text-slate-400 group-hover:text-emerald-600 transition-colors duration-200">
@@ -123,7 +123,7 @@ export function Sidebar({
       href={href}
       onClick={handleLinkClick}
       className={cn(
-        "group flex items-center justify-between rounded-xl px-3 py-2.5 text-[13.5px] font-semibold apple-transition active:scale-[0.98] select-none",
+        "group flex items-center justify-between rounded-xl px-3 py-2.5 text-[15px] font-semibold apple-transition active:scale-[0.98] select-none",
         isActive
           ? theme.bg
           : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/70"
@@ -169,7 +169,7 @@ export function Sidebar({
           </div>
           <div>
             <span className="text-[20px] font-black tracking-tight text-slate-900 leading-none">
-              CHATZO
+              OFFSHIFT
             </span>
             <p className="text-[9px] font-bold text-emerald-600 tracking-[0.12em] uppercase leading-none mt-0.5">
               WhatsApp Commerce
@@ -183,12 +183,12 @@ export function Sidebar({
             {activeCategoryConfig.emoji}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-bold text-slate-900 truncate leading-tight">
+            <p className="text-[14.5px] font-bold text-slate-900 truncate leading-tight">
               {profile.businessName || "Your Business"}
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <p className="text-[10px] text-emerald-700 font-semibold uppercase tracking-wider truncate">
+              <p className="text-[11.5px] text-emerald-700 font-semibold uppercase tracking-wider truncate">
                 {activeCategoryConfig.label}
               </p>
             </div>
@@ -205,7 +205,7 @@ export function Sidebar({
               href={`/dashboard/${currentCategory}/overview`}
               onClick={handleLinkClick}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-bold apple-transition active:scale-[0.98]",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold apple-transition active:scale-[0.98]",
                 currentTab === "overview"
                   ? theme.bg
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/70"
@@ -229,8 +229,8 @@ export function Sidebar({
               expandedSections.business,
               () => toggleSection("business")
             )}
-            <div className={cn("apple-accordion", expandedSections.business && "open")}>
-              <div className="apple-accordion-inner space-y-0.5 pl-2 mt-1">
+            {expandedSections.business && (
+              <div className="space-y-0.5 pl-2 mt-1 transition-all duration-200">
                 {[
                   { id: "my-shop", label: "My Shop" },
                   { id: "branches", label: "Branches" },
@@ -245,7 +245,7 @@ export function Sidebar({
                   )
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Section: Orders & Catalog ────────────── */}
@@ -256,8 +256,8 @@ export function Sidebar({
               expandedSections.catalog,
               () => toggleSection("catalog")
             )}
-            <div className={cn("apple-accordion", expandedSections.catalog && "open")}>
-              <div className="apple-accordion-inner space-y-0.5 pl-2 mt-1">
+            {expandedSections.catalog && (
+              <div className="space-y-0.5 pl-2 mt-1 transition-all duration-200">
                 {renderNavItem(
                   `/dashboard/${currentCategory}/orders`,
                   "Orders",
@@ -278,7 +278,7 @@ export function Sidebar({
                   )
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Section: Marketing ──────────────────── */}
@@ -289,8 +289,8 @@ export function Sidebar({
               expandedSections.marketing,
               () => toggleSection("marketing")
             )}
-            <div className={cn("apple-accordion", expandedSections.marketing && "open")}>
-              <div className="apple-accordion-inner space-y-0.5 pl-2 mt-1">
+            {expandedSections.marketing && (
+              <div className="space-y-0.5 pl-2 mt-1 transition-all duration-200">
                 {renderNavItem(
                   `/dashboard/${currentCategory}/campaigns`,
                   "Campaigns",
@@ -313,7 +313,7 @@ export function Sidebar({
                   currentTab === "reviews"
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Section: Finance ────────────────────── */}
@@ -324,8 +324,8 @@ export function Sidebar({
               expandedSections.finance,
               () => toggleSection("finance")
             )}
-            <div className={cn("apple-accordion", expandedSections.finance && "open")}>
-              <div className="apple-accordion-inner space-y-0.5 pl-2 mt-1">
+            {expandedSections.finance && (
+              <div className="space-y-0.5 pl-2 mt-1 transition-all duration-200">
                 {[
                   { id: "revenue", label: "Revenue" },
                   { id: "transactions", label: "Transactions" },
@@ -339,7 +339,7 @@ export function Sidebar({
                   )
                 )}
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Utility Links ──────────────────────── */}
@@ -348,7 +348,7 @@ export function Sidebar({
               href={`/dashboard/${currentCategory}/ai-assistant`}
               onClick={handleLinkClick}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-bold apple-transition active:scale-[0.98]",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold apple-transition active:scale-[0.98]",
                 currentTab === "ai-assistant"
                   ? theme.bg
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/70"
@@ -367,7 +367,7 @@ export function Sidebar({
               href={`/dashboard/${currentCategory}/settings`}
               onClick={handleLinkClick}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-bold apple-transition active:scale-[0.98]",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold apple-transition active:scale-[0.98]",
                 currentTab === "settings"
                   ? theme.bg
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/70"
@@ -386,7 +386,7 @@ export function Sidebar({
               href={`/dashboard/${currentCategory}/report-issue`}
               onClick={handleLinkClick}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13.5px] font-bold apple-transition active:scale-[0.98]",
+                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-bold apple-transition active:scale-[0.98]",
                 currentTab === "report-issue"
                   ? theme.bg
                   : "text-slate-700 hover:text-slate-900 hover:bg-slate-100/70"

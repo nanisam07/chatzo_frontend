@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CHATZO | Every WhatsApp Chat Is a New Storefront.",
+  title: "OFFSHIFT | Every WhatsApp Chat Is a New Storefront.",
   description:
     "Transform conversations into sales with intelligent storefronts, seamless ordering, and powerful business management—all connected to WhatsApp.",
   keywords: [
@@ -22,22 +22,22 @@ export const metadata: Metadata = {
     "WhatsApp Store",
     "SaaS Commerce",
     "WhatsApp Commerce",
-    "Chatzo",
+    "Offshift",
     "E-commerce",
   ],
-  authors: [{ name: "CHATZO Team" }],
+  authors: [{ name: "OFFSHIFT Team" }],
   openGraph: {
-    title: "CHATZO - Every WhatsApp Chat Is a New Storefront",
+    title: "OFFSHIFT - Every WhatsApp Chat Is a New Storefront",
     description:
       "Transform conversations into sales with intelligent storefronts, seamless ordering, and powerful business management—all connected to WhatsApp.",
-    url: "https://chatzo.com",
-    siteName: "CHATZO",
+    url: "https://offshift.com",
+    siteName: "OFFSHIFT",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "CHATZO - Every WhatsApp Chat Is a New Storefront",
+    title: "OFFSHIFT - Every WhatsApp Chat Is a New Storefront",
     description:
       "Transform conversations into sales with intelligent storefronts, seamless ordering, and powerful business management—all connected to WhatsApp.",
   },

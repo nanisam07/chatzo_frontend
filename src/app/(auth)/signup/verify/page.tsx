@@ -288,10 +288,10 @@ export default function VerifyEmailPage() {
         {/* Brand Bar */}
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#25D366] to-emerald-400 flex items-center justify-center shadow-lg shadow-[#25D366]/20">
-            <span className="text-[#0a0a12] font-black text-lg">C</span>
+            <span className="text-[#0a0a12] font-black text-lg">O</span>
           </div>
           <span className="text-xl font-black tracking-wider text-foreground">
-            CHATZO
+            OFFSHIFT
           </span>
         </div>
 

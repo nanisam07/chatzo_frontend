@@ -108,8 +108,7 @@ interface RawTicket {
   id: string;
   category: SupportTicket["category"];
   priority: SupportTicket["priority"];
-  subject: string;
-  description: string;
+  issue: string;
   status: SupportTicket["status"];
   createdAt: string;
 }
@@ -314,6 +313,32 @@ export const merchantApi = {
   async fetchProfile(): Promise<unknown> {
     const res = await api.get(`/auth/me`);
     if (!res.ok) throw new Error("Failed to fetch profile");
+    const json = await res.json();
+    return json.data || json;
+  },
+  async updateProfile(profileData: {
+    businessName: string;
+    businessCategory: string;
+    ownerName: string;
+    phone: string;
+    country: string;
+    address: string;
+    currency?: string;
+    timezone?: string;
+    businessHours?: Record<string, string>;
+    logo?: string;
+    banner?: string;
+    gstNumber?: string;
+    licenseNumber?: string;
+  }): Promise<unknown> {
+    const res = await api.patch(`/auth/onboarding`, profileData);
+    if (!res.ok) throw new Error("Failed to update onboarding profile");
+    const json = await res.json();
+    return json.data || json;
+  },
+  async deleteStaff(id: string): Promise<unknown> {
+    const res = await api.delete(`/merchant/staff/${id}`);
+    if (!res.ok) throw new Error("Failed to delete staff member");
     const json = await res.json();
     return json.data || json;
   },

@@ -42,6 +42,7 @@ export interface WorkspaceProfile {
   timezone: string;
   businessVerificationStatus?: "Verified" | "Unverified";
   businessHours: Record<string, string>;
+  address: string;
 }
 
 export interface ChatMessage {
@@ -117,6 +118,7 @@ interface ProfileResponse {
       phone?: string;
       timezone?: string;
       businessHours?: Record<string, string>;
+      address?: string;
     } | null;
   };
 }
@@ -154,7 +156,7 @@ export interface WorkspaceStore {
   setCurrentCategory: (category: string) => void;
   showToast: (message: string, type?: "success" | "error" | "info") => void;
   hideToast: () => void;
-  updateProfile: (updates: Partial<WorkspaceProfile>) => void;
+  updateProfile: (updates: Partial<WorkspaceProfile>) => Promise<void>;
   hydrateWorkspace: (category: string) => Promise<void>;
 
   // Local-only Actions
@@ -187,6 +189,7 @@ export interface WorkspaceStore {
   // Staff Backend Actions
   fetchStaff: () => Promise<void>;
   addStaff: (staffMember: Omit<StaffItem, "id">) => Promise<void>;
+  deleteStaff: (id: string) => Promise<void>;
 
   // Printers Backend Actions
   fetchPrinters: () => Promise<void>;
@@ -240,6 +243,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         phone: "",
         timezone: "",
         businessVerificationStatus: "Unverified",
+        address: "",
         businessHours: {
           monday: "09:00 - 22:00",
           tuesday: "09:00 - 22:00",
@@ -277,10 +281,33 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       showToast: (message, type = "success") => set({ toast: { message, type } }),
       hideToast: () => set({ toast: null }),
 
-      updateProfile: (updates) =>
-        set((state) => ({
-          profile: { ...state.profile, ...updates },
-        })),
+      updateProfile: async (updates) => {
+        try {
+          const currentProfile = get().profile;
+          const merged = {
+            businessName: updates.businessName ?? currentProfile.businessName,
+            businessCategory: updates.businessCategory ?? currentProfile.businessCategory,
+            ownerName: updates.ownerName ?? currentProfile.ownerName,
+            phone: updates.phone ?? currentProfile.phone,
+            country: updates.country ?? currentProfile.country,
+            address: updates.address ?? currentProfile.address,
+            currency: updates.currency ?? currentProfile.currency,
+            timezone: updates.timezone ?? currentProfile.timezone,
+            businessHours: updates.businessHours ?? currentProfile.businessHours,
+            logo: updates.businessLogo ?? currentProfile.businessLogo,
+            banner: updates.businessBanner ?? currentProfile.businessBanner,
+          };
+          
+          await merchantApi.updateProfile(merged);
+          
+          set((state) => ({
+            profile: { ...state.profile, ...updates },
+          }));
+        } catch (error) {
+          get().showToast("Failed to save profile settings", "error");
+          console.error(error);
+        }
+      },
 
       // Complete Hydration Action
       hydrateWorkspace: async (category: string) => {
@@ -320,6 +347,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 timezone: user.merchantProfile?.timezone || "Asia/Kolkata (IST)",
                 businessVerificationStatus: "Verified",
                 businessHours: user.merchantProfile?.businessHours || get().profile.businessHours,
+                address: user.merchantProfile?.address || "",
               },
             });
           }
@@ -619,6 +647,18 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           }));
         } catch (error) {
           get().showToast("Failed to add staff member on backend", "error");
+          throw error;
+        }
+      },
+
+      deleteStaff: async (id) => {
+        try {
+          await merchantApi.deleteStaff(id);
+          set((state) => ({
+            staff: state.staff.filter((s) => s.id !== id),
+          }));
+        } catch (error) {
+          get().showToast("Failed to delete staff member from backend", "error");
           throw error;
         }
       },

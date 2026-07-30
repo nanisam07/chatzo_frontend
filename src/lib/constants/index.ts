@@ -1,5 +1,5 @@
 export const BRAND = {
-  name: "CHATZO",
+  name: "OFFSHIFT",
   tagline: "Every WhatsApp Chat Is a New Storefront.",
   description:
     "Transform conversations into sales with intelligent storefronts, seamless ordering, and powerful business management—all connected to WhatsApp.",

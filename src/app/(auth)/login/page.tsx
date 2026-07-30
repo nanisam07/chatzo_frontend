@@ -286,7 +286,7 @@ export default function LoginPage() {
 
           {/* Giant watermark */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-            <span className="text-[22vw] font-black tracking-tighter text-white/[0.015] uppercase">CHATZO</span>
+            <span className="text-[22vw] font-black tracking-tighter text-white/[0.015] uppercase">OFFSHIFT</span>
           </div>
 
           {/* Floating preview cards */}
@@ -302,7 +302,7 @@ export default function LoginPage() {
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#25D366] to-[#7C3AED] flex items-center justify-center shadow-lg shadow-[#25D366]/20">
                 <MessageSquare size={18} className="text-white" />
               </div>
-              <span className="text-xl font-black tracking-[0.15em] text-white">CHATZO</span>
+              <span className="text-xl font-black tracking-[0.15em] text-white">OFFSHIFT</span>
             </div>
 
             {/* Headline */}
@@ -342,7 +342,7 @@ export default function LoginPage() {
           {/* Bottom branding */}
           <div className="px-12 pb-8 relative z-10">
             <p className="text-[11px] text-white/25">
-              © 2026 Chatzo. All rights reserved.
+              © 2026 Offshift. All rights reserved.
             </p>
           </div>
         </div>
@@ -355,7 +355,7 @@ export default function LoginPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#25D366] to-[#7C3AED] flex items-center justify-center">
               <MessageSquare size={16} className="text-white" />
             </div>
-            <span className="text-lg font-black tracking-widest text-foreground">CHATZO</span>
+            <span className="text-lg font-black tracking-widest text-foreground">OFFSHIFT</span>
           </div>
 
           {/* Auth card */}
@@ -366,7 +366,7 @@ export default function LoginPage() {
             {/* Header */}
             <div className="space-y-1">
               <h2 className="text-2xl font-black text-foreground tracking-tight">Welcome back</h2>
-              <p className="text-sm text-muted-foreground">Sign in to your Chatzo workspace</p>
+              <p className="text-sm text-muted-foreground">Sign in to your Offshift workspace</p>
             </div>
 
             {/* Form */}
@@ -474,7 +474,7 @@ export default function LoginPage() {
           </div>
 
           <p className="mt-6 text-[10px] text-muted-foreground text-center">
-            By signing in, you agree to Chatzo&apos;s{" "}
+            By signing in, you agree to Offshift&apos;s{" "}
             <Link href="#" className="hover:underline">Terms</Link> &amp;{" "}
             <Link href="#" className="hover:underline">Privacy Policy</Link>.
           </p>

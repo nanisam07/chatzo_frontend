@@ -33,6 +33,7 @@ import {
   Layers,
   Check,
   Megaphone,
+  QrCode,
   Store,
   Sun,
   CloudSun,
@@ -664,7 +665,7 @@ export function OverviewTab({ category, config }: WidgetTabProps) {
 /* ───────────────────────────────────────────────────────── */
 /* ─── 2. MY SHOP TAB ────────────────────────────────────── */
 /* ───────────────────────────────────────────────────────── */
-export function MyShopTab({ category }: WidgetTabProps) {
+export function MyShopTab({ category, config }: WidgetTabProps) {
   const { profile, updateProfile, orders, products, deliveryZones, addDeliveryZone, addItem } = useWorkspaceStore();
   const colors = getCategoryColors(category);
 
@@ -683,6 +684,17 @@ export function MyShopTab({ category }: WidgetTabProps) {
     deliveryTime: profile.deliveryTime || "30-45 mins",
     deliveryRadius: profile.deliveryRadius || 5,
   });
+
+  useEffect(() => {
+    setDetailsForm({ ...profile });
+    setHoursForm({ ...profile.businessHours });
+    setDeliveryForm({
+      deliveryCharges: profile.deliveryCharges || 0,
+      freeDeliveryThreshold: profile.freeDeliveryThreshold || 0,
+      deliveryTime: profile.deliveryTime || "30-45 mins",
+      deliveryRadius: profile.deliveryRadius || 5,
+    });
+  }, [profile]);
 
   const [ordersEmptyState, setOrdersEmptyState] = useState(false);
   const categoryOrders = orders[category] || [];
@@ -1453,6 +1465,293 @@ export function MyShopTab({ category }: WidgetTabProps) {
             )}
           </div>
         )}
+
+        {/* CATALOG SUB TAB */}
+        {activeSubTab === "catalog" && (
+          <CategoriesTab category={category} config={config} />
+        )}
+
+        {/* STOREFRONT & QR SUB TAB */}
+        {activeSubTab === "storefront" && (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Storefront & QR Codes</h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Share your QR codes and catalog storefront links</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Storefront Link Card */}
+              <div className="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 space-y-4">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600">
+                  <Store size={20} />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">Your Storefront URL</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Customers can place orders directly using this link</p>
+                </div>
+                <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-2.5">
+                  <span className="text-xs text-slate-700 font-mono truncate flex-1">{profile.website}</span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(profile.website);
+                      showToast("Store URL copied!", "success");
+                    }}
+                    className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                  >
+                    Copy
+                  </button>
+                </div>
+              </div>
+
+              {/* QR Code Card */}
+              <div className="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 space-y-4 flex flex-col items-center text-center">
+                <div className="h-40 w-40 bg-white border border-slate-200 rounded-2xl p-3 flex items-center justify-center shadow-xs">
+                  <QrCode size={120} className="text-slate-900" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">WhatsApp Catalog QR Code</h4>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">Print this code for in-store checkout table scans</p>
+                </div>
+                <button
+                  onClick={() => showToast("Downloading QR Code print file...", "info")}
+                  className="h-9 px-4 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Download size={14} /> Download PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* LOCATION SUB TAB */}
+        {activeSubTab === "location" && (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Store Location & Regional Settings</h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Manage physical addresses, base currencies, and timezone parameters</p>
+            </div>
+            <form onSubmit={handleSaveDetails} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Physical Address</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.address || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Country</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.country || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, country: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Currency</label>
+                  <input
+                    type="text"
+                    value={detailsForm.currency || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, currency: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Timezone</label>
+                  <input
+                    type="text"
+                    value={detailsForm.timezone || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, timezone: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end pt-2">
+                <button
+                  type="submit"
+                  className={cn("h-9 px-5 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors", colors.primary)}
+                >
+                  Save Location Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* SETTINGS WORKSPACE SUB TAB */}
+        {activeSubTab === "settings" && (
+          <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-bold text-slate-900">Workspace Settings</h3>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Manage business profile configurations and branding variables</p>
+            </div>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              await updateProfile({
+                businessName: detailsForm.businessName,
+                ownerName: detailsForm.ownerName,
+                businessCategory: detailsForm.businessCategory,
+                phone: detailsForm.phone,
+                address: detailsForm.address,
+                country: detailsForm.country,
+                currency: detailsForm.currency,
+                timezone: detailsForm.timezone,
+                businessLogo: detailsForm.businessLogo,
+                deliveryCharges: deliveryForm.deliveryCharges,
+                freeDeliveryThreshold: deliveryForm.freeDeliveryThreshold,
+                deliveryTime: deliveryForm.deliveryTime,
+                deliveryRadius: deliveryForm.deliveryRadius,
+              });
+              triggerSaveNotification("Workspace Settings updated successfully.");
+            }} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.businessName || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, businessName: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Owner Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.ownerName || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, ownerName: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Workspace Category</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.businessCategory || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, businessCategory: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Phone</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.phone || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Address</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.address || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Country</label>
+                  <input
+                    type="text"
+                    required
+                    value={detailsForm.country || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, country: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Currency</label>
+                  <input
+                    type="text"
+                    value={detailsForm.currency || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, currency: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Timezone</label>
+                  <input
+                    type="text"
+                    value={detailsForm.timezone || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, timezone: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Logo URL</label>
+                  <input
+                    type="text"
+                    value={detailsForm.businessLogo || ""}
+                    onChange={(e) => setDetailsForm({ ...detailsForm, businessLogo: e.target.value })}
+                    className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Delivery Settings embedded inside Settings Workspace */}
+              <div className="border-t border-slate-100 pt-4 space-y-4">
+                <h4 className="text-sm font-bold text-slate-900">Delivery & Catalog Fees</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase block">Delivery Charge (₹)</label>
+                    <input
+                      type="number"
+                      value={deliveryForm.deliveryCharges}
+                      onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryCharges: Number(e.target.value) })}
+                      className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase block">Free Delivery Min (₹)</label>
+                    <input
+                      type="number"
+                      value={deliveryForm.freeDeliveryThreshold}
+                      onChange={(e) => setDeliveryForm({ ...deliveryForm, freeDeliveryThreshold: Number(e.target.value) })}
+                      className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-bold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase block">Delivery ETA</label>
+                    <input
+                      type="text"
+                      value={deliveryForm.deliveryTime || ""}
+                      onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryTime: e.target.value })}
+                      className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-500 uppercase block">Radius (km)</label>
+                    <input
+                      type="number"
+                      value={deliveryForm.deliveryRadius}
+                      onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryRadius: Number(e.target.value) })}
+                      className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button
+                  type="submit"
+                  className={cn("h-9 px-5 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors", colors.primary)}
+                >
+                  Save Workspace Settings
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1565,7 +1864,7 @@ export function BranchesTab({ category }: WidgetTabProps) {
 /* ─── 4. STAFF TAB ──────────────────────────────────────── */
 /* ───────────────────────────────────────────────────────── */
 export function StaffTab({ category }: WidgetTabProps) {
-  const { staff, addStaff, loginLogs } = useWorkspaceStore();
+  const { staff, addStaff, loginLogs, deleteStaff } = useWorkspaceStore();
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
   const [role, setRole] = useState("");
@@ -1662,6 +1961,7 @@ export function StaffTab({ category }: WidgetTabProps) {
                     <th className="py-3 px-5 bg-slate-50">Role</th>
                     <th className="py-3 px-5 bg-slate-50">Contact</th>
                     <th className="py-3 px-5 bg-slate-50">Status</th>
+                    <th className="py-3 px-5 bg-slate-50 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -1678,6 +1978,24 @@ export function StaffTab({ category }: WidgetTabProps) {
                         <span className="px-2.5 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-800 border border-emerald-200/60">
                           {s.status}
                         </span>
+                      </td>
+                      <td className="py-3.5 px-5 text-right">
+                        <button
+                          onClick={async () => {
+                            if (confirm(`Are you sure you want to delete ${s.name}?`)) {
+                              try {
+                                await deleteStaff(s.id);
+                                showToast("Staff member deleted successfully", "success");
+                              } catch (e) {
+                                // error toast is handled by store
+                              }
+                            }
+                          }}
+                          className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                          title="Delete staff member"
+                        >
+                          <Trash2 size={15} />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -3131,46 +3449,199 @@ export function AiAssistantTab({ category }: WidgetTabProps) {
 /* ─── 22. SETTINGS TAB ──────────────────────────────────── */
 /* ───────────────────────────────────────────────────────── */
 export function SettingsTab({ category }: WidgetTabProps) {
-  const { apiSyncStatus, profile } = useWorkspaceStore();
+  const { profile, updateProfile } = useWorkspaceStore();
+  const colors = getCategoryColors(category);
+
+  const [detailsForm, setDetailsForm] = useState({ ...profile });
+  const [deliveryForm, setDeliveryForm] = useState({
+    deliveryCharges: profile.deliveryCharges || 0,
+    freeDeliveryThreshold: profile.freeDeliveryThreshold || 0,
+    deliveryTime: profile.deliveryTime || "30-45 mins",
+    deliveryRadius: profile.deliveryRadius || 5,
+  });
+
+  useEffect(() => {
+    setDetailsForm({ ...profile });
+    setDeliveryForm({
+      deliveryCharges: profile.deliveryCharges || 0,
+      freeDeliveryThreshold: profile.freeDeliveryThreshold || 0,
+      deliveryTime: profile.deliveryTime || "30-45 mins",
+      deliveryRadius: profile.deliveryRadius || 5,
+    });
+  }, [profile]);
 
   return (
     <PageWrapper
       title="Platform & Settings"
-      description="Configure Meta Cloud API credentials, payment links, and employee authorization roles"
+      description="Configure your workspace branding, regional profiles, and catalog checkout policies"
       category={category}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-6 space-y-4">
-          <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">WhatsApp Cloud API</h3>
-          <div className="space-y-3 text-xs font-medium">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px]">Webhook Sync:</span>
-              <span className="font-mono text-slate-900 font-bold">chatzo.io/webhook/meta/{category}</span>
+      <div className="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs space-y-6">
+        <div className="border-b border-slate-100 pb-3">
+          <h3 className="text-base font-bold text-slate-900">Workspace Profile Settings</h3>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">Manage business profile configurations and branding variables</p>
+        </div>
+        <form onSubmit={async (e) => {
+          e.preventDefault();
+          await updateProfile({
+            businessName: detailsForm.businessName,
+            ownerName: detailsForm.ownerName,
+            businessCategory: detailsForm.businessCategory,
+            phone: detailsForm.phone,
+            address: detailsForm.address,
+            country: detailsForm.country,
+            currency: detailsForm.currency,
+            timezone: detailsForm.timezone,
+            businessLogo: detailsForm.businessLogo,
+            deliveryCharges: deliveryForm.deliveryCharges,
+            freeDeliveryThreshold: deliveryForm.freeDeliveryThreshold,
+            deliveryTime: deliveryForm.deliveryTime,
+            deliveryRadius: deliveryForm.deliveryRadius,
+          });
+          showToast("Workspace Settings updated successfully.", "success");
+        }} className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Name</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.businessName || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, businessName: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px]">API Status:</span>
-              <span className="text-emerald-600 font-bold">48ms Delay (Connected)</span>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Owner Full Name</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.ownerName || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, ownerName: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px]">Endpoint:</span>
-              <span className="text-blue-600 font-bold font-mono">{apiSyncStatus}</span>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Workspace Category</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.businessCategory || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, businessCategory: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Phone</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.phone || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Address</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.address || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Country</label>
+              <input
+                type="text"
+                required
+                value={detailsForm.country || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, country: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Currency</label>
+              <input
+                type="text"
+                value={detailsForm.currency || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, currency: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Timezone</label>
+              <input
+                type="text"
+                value={detailsForm.timezone || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, timezone: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-bold text-slate-500 uppercase block">Business Logo URL</label>
+              <input
+                type="text"
+                value={detailsForm.businessLogo || ""}
+                onChange={(e) => setDetailsForm({ ...detailsForm, businessLogo: e.target.value })}
+                className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+              />
             </div>
           </div>
-        </div>
 
-        <div className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-6 space-y-4">
-          <h3 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">Integrations & Security</h3>
-          <div className="space-y-3 text-xs font-medium">
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px]">Gateways:</span>
-              <span className="font-bold text-slate-900">Razorpay (Active), Stripe</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-slate-500 uppercase tracking-wider text-[10px]">Timezone:</span>
-              <span className="font-mono text-slate-600">{profile.timezone}</span>
+          {/* Delivery Settings embedded inside Settings Workspace */}
+          <div className="border-t border-slate-100 pt-4 space-y-4">
+            <h4 className="text-sm font-bold text-slate-900">Delivery & Catalog Fees</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Delivery Charge (₹)</label>
+                <input
+                  type="number"
+                  value={deliveryForm.deliveryCharges}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryCharges: Number(e.target.value) })}
+                  className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-bold"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Free Delivery Min (₹)</label>
+                <input
+                  type="number"
+                  value={deliveryForm.freeDeliveryThreshold}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, freeDeliveryThreshold: Number(e.target.value) })}
+                  className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-bold"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Delivery ETA</label>
+                <input
+                  type="text"
+                  value={deliveryForm.deliveryTime || ""}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryTime: e.target.value })}
+                  className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase block">Radius (km)</label>
+                <input
+                  type="number"
+                  value={deliveryForm.deliveryRadius}
+                  onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryRadius: Number(e.target.value) })}
+                  className="w-full h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none focus:border-emerald-500 font-semibold"
+                />
+              </div>
             </div>
           </div>
-        </div>
+
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+            <button
+              type="submit"
+              className={cn("h-9 px-5 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer transition-colors", colors.primary)}
+            >
+              Save Workspace Settings
+            </button>
+          </div>
+        </form>
       </div>
     </PageWrapper>
   );

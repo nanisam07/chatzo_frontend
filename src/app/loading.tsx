@@ -9,7 +9,7 @@ export default function Loading() {
         {/* Spinner */}
         <div className="w-12 h-12 rounded-full border-2 border-white/5 border-t-whatsapp animate-spin" />
         <span className="text-xs font-semibold tracking-widest text-neutral-500 uppercase animate-pulse pt-2">
-          Loading Chatzo
+          Loading Offshift
         </span>
       </div>
     </div>
