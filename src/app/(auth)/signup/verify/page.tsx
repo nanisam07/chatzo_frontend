@@ -57,7 +57,7 @@ function VerifyEmailForm() {
     setLoadingText("Sending a new verification code...");
 
     try {
-      const response = await api.post("/api/v1/auth/resend-otp", {
+      const response = await api.post("/auth/resend-otp", {
         email,
         type: "EMAIL_VERIFICATION",
       });
@@ -134,7 +134,7 @@ function VerifyEmailForm() {
     setLoadingText("Verifying code...");
 
     try {
-      const response = await api.post("/api/v1/auth/verify-otp", {
+      const response = await api.post("/auth/verify-otp", {
         email,
         otp: code,
         type: "EMAIL_VERIFICATION",

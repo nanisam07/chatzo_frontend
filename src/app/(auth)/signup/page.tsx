@@ -164,7 +164,7 @@ export default function SignupPage() {
     setLoadingText("Creating your account...");
 
     try {
-      const response = await api.post("/api/v1/auth/signup", {
+      const response = await api.post("/auth/signup", {
         fullName: form.fullName,
         businessName: form.businessName,
         email: form.email,

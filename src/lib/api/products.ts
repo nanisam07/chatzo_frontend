@@ -1,3 +1,5 @@
+import { api } from "@/lib/api/client";
+
 export interface ProductItem {
   id: string;
   name: string;
@@ -7,50 +9,27 @@ export interface ProductItem {
   stock?: number;
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
-
-const getHeaders = () => {
-  const token = localStorage.getItem("accessToken");
-
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-
-  console.log(headers);
-
-  return headers;
-};
-
 export const productsApi = {
   async fetchProducts(category: string): Promise<ProductItem[]> {
-    const res = await fetch(
-      `${API_BASE_URL}/merchant/products?category=${encodeURIComponent(category)}`,
-      {
-        method: "GET",
-        headers: getHeaders(),
-      }
-    );
+    const res = await api.get(`/merchant/products?category=${encodeURIComponent(category)}`);
 
     if (!res.ok) throw new Error("Failed to fetch products");
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async addProduct(
     category: string,
     product: Omit<ProductItem, "id">
   ): Promise<ProductItem> {
-    const res = await fetch(`${API_BASE_URL}/merchant/products`, {
-      method: "POST",
-      headers: getHeaders(),
-      body: JSON.stringify({
-        category,
-        ...product,
-      }),
+    const res = await api.post(`/merchant/products`, {
+      category,
+      ...product,
     });
 
     if (!res.ok) throw new Error("Failed to add product");
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async updateProduct(
@@ -58,32 +37,26 @@ export const productsApi = {
     id: string,
     updates: Partial<ProductItem>
   ): Promise<ProductItem> {
-    const res = await fetch(`${API_BASE_URL}/merchant/products/${id}`, {
-      method: "PUT",
-      headers: getHeaders(),
-      body: JSON.stringify({
-        category,
-        ...updates,
-      }),
+    const res = await api.put(`/merchant/products/${id}`, {
+      category,
+      ...updates,
     });
 
     if (!res.ok) throw new Error("Failed to update product");
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 
   async deleteProduct(
     category: string,
     id: string
   ): Promise<{ success: boolean }> {
-    const res = await fetch(
-      `${API_BASE_URL}/merchant/products/${id}?category=${encodeURIComponent(category)}`,
-      {
-        method: "DELETE",
-        headers: getHeaders(),
-      }
+    const res = await api.delete(
+      `/merchant/products/${id}?category=${encodeURIComponent(category)}`
     );
 
     if (!res.ok) throw new Error("Failed to delete product");
-    return res.json();
+    const json = await res.json();
+    return json.data || json;
   },
 };

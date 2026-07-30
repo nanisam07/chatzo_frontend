@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { CategoryConfig } from "@/lib/config/categories";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
+import { ProductItem } from "@/lib/api/products";
 import { SupportTicket, PrinterDevice } from "@/lib/types/merchant";
 import {
   TrendingUp,
@@ -1782,7 +1783,7 @@ export function HardwareTab({ category }: WidgetTabProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !ipAddress) return;
-    addPrinter({ name, type, ipAddress, paperWidth });
+    addPrinter({ name, type, ipAddress, paperWidth, latency: 0 });
     setName("");
     setIpAddress("");
     setIsOpen(false);
@@ -2109,7 +2110,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
   const { products, fetchProducts, addItem, updateItem, deleteItem } = useWorkspaceStore();
   
   const [isOpen, setIsOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<any | null>(null);
+  const [editingItem, setEditingItem] = useState<ProductItem | null>(null);
 
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
@@ -2131,7 +2132,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
     setIsOpen(true);
   };
 
-  const handleOpenEditModal = (item: any) => {
+  const handleOpenEditModal = (item: ProductItem) => {
     setEditingItem(item);
     setName(item.name);
     setPrice(String(item.price));
@@ -3134,7 +3135,7 @@ export function ReportIssueTab({ category }: WidgetTabProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject || !desc) return;
-    addTicket({ category: cat, priority, subject, description: desc });
+    addTicket({ category: cat, priority, subject, description: desc, createdAt: new Date().toISOString() });
     setSubject("");
     setDesc("");
     setIsOpen(false);

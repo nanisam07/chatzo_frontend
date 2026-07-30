@@ -10,7 +10,7 @@ class ApiClient {
 
   private async executeRefresh(refreshTokenVal: string): Promise<string | null> {
     try {
-      const refreshRes = await fetch(`${this.baseUrl}/api/v1/auth/refresh-token`, {
+      const refreshRes = await fetch(`${this.baseUrl}/auth/refresh-token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
