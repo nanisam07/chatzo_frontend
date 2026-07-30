@@ -204,6 +204,9 @@ interface WorkspaceState {
   updateTicketStatus: (id: string, status: SupportTicket["status"]) => void;
   addDeliveryZone: (zone: Omit<DeliveryZone, "id">) => Promise<void>;
   addComboProduct: (combo: Omit<ComboProduct, "id">) => void;
+  toast: { message: string; type: "success" | "error" | "info" } | null;
+  showToast: (message: string, type?: "success" | "error" | "info") => void;
+  hideToast: () => void;
 }
 
 const defaultProfile: MerchantProfile = {
@@ -266,6 +269,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   currentCategory: "retail",
   isLoading: false,
   apiSyncStatus: "Connected",
+  toast: null,
 
   // 1. Initial State
   profile: defaultProfile,
@@ -884,4 +888,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         { ...combo, id: `CB-0${state.combos.length + 1}` }
       ]
     })),
+  showToast: (message, type = "success") => set({ toast: { message, type } }),
+  hideToast: () => set({ toast: null }),
 }));

@@ -54,13 +54,21 @@ import {
   ArrowUpRight,
   Info,
   Check,
+  Megaphone,
+  Store,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { WhatsAppConnectModal } from "@/components/dashboard/WhatsAppConnectModal";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 
 interface WidgetTabProps {
   category: string;
   config: CategoryConfig;
 }
+
+const showToast = (message: string, type: "success" | "error" | "info" = "success") => {
+  useWorkspaceStore.getState().showToast(message, type);
+};
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 /* â”€â”€â”€ THEME ACCENT COLOR HELPERS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
@@ -351,19 +359,8 @@ export function OverviewTab({ category, config }: WidgetTabProps) {
         </div>
       </div>
 
-      {/* â”€â”€ WHATSAPP CONNECT MODAL â”€â”€â”€ */}
-      {showWAModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full">
-            <h3 className="font-bold text-lg mb-2">Connect WhatsApp</h3>
-            <p className="text-sm text-gray-500 mb-6">Connect your business WhatsApp to receive order notifications and reply to customers.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setShowWAModal(false)} className="flex-1 px-4 py-2 text-sm font-bold bg-gray-100 rounded-xl">Cancel</button>
-              <button onClick={() => { updateProfile({ whatsappStatus: "Connected" }); setShowWAModal(false); }} className="flex-1 px-4 py-2 text-sm font-bold bg-emerald-600 text-white rounded-xl">Connect</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* ── WHATSAPP CONNECT MODAL ─── */}
+      <WhatsAppConnectModal isOpen={showWAModal} onClose={() => setShowWAModal(false)} />
 
       {/* â”€â”€ SETUP CHECKLIST â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="bg-white border border-gray-100 rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-5">
@@ -569,7 +566,7 @@ export function OverviewTab({ category, config }: WidgetTabProps) {
                     <button
                       onClick={() => {
                         updateOrderStatus(category, o.id, "Completed");
-                        alert(`Order ${o.id} marked as Completed.`);
+                        showToast(`Order ${o.id} marked as Completed.`, "success");
                       }}
                       className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] rounded-lg transition-colors cursor-pointer"
                     >
@@ -716,7 +713,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
 
   // Notification / Alert trigger helper
   const triggerSaveNotification = (msg: string) => {
-    alert(msg);
+    showToast(msg, "info");
   };
 
   const handleSaveDetails = (e: React.FormEvent) => {
@@ -743,7 +740,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
   const handleAddProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProduct.name || newProduct.price <= 0) {
-      alert("Please provide valid product name and price.");
+      showToast("Please provide valid product name and price.", "error");
       return;
     }
     addItem(category, {
@@ -775,7 +772,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
             Edit Shop
           </button>
           <button
-            onClick={() => alert("Banner file selector opened.")}
+            onClick={() => showToast("Banner file selector opened.", "info")}
             className="px-4 py-2 border border-gray-150 rounded-xl hover:bg-gray-50 text-gray-700 font-bold text-xs transition-all cursor-pointer"
           >
             Change Banner
@@ -783,7 +780,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
           <button
             onClick={() => {
               navigator.clipboard.writeText(profile.website);
-              alert("Store link copied: " + profile.website);
+              showToast("Store link copied to clipboard!", "success");
             }}
             className={cn("px-4 py-2 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm", colors.primary)}
           >
@@ -834,7 +831,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(profile.website);
-                      alert("Store URL copied!");
+                      showToast("Store URL copied to clipboard!", "success");
                     }}
                     className="text-[10px] font-black text-blue-600 bg-blue-50 border border-blue-150 px-2 py-0.5 rounded"
                   >
@@ -963,7 +960,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                     <button onClick={() => setActiveSubTab("settings")} className="p-3 border border-gray-150 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-800 text-center transition-colors">Setup API</button>
                     <button onClick={() => setActiveSubTab("products")} className="p-3 border border-gray-150 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-800 text-center transition-colors">Add Catalog</button>
                     <button onClick={() => setActiveSubTab("storefront")} className="p-3 border border-gray-150 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-800 text-center transition-colors">QR Prints</button>
-                    <button onClick={() => alert("Report exported.")} className="p-3 border border-gray-150 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-800 text-center transition-colors">Export Logs</button>
+                    <button onClick={() => showToast("Report logs exported successfully.", "success")} className="p-3 border border-gray-150 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-800 text-center transition-colors">Export Logs</button>
                   </div>
                 </div>
               </div>
@@ -982,158 +979,76 @@ export function MyShopTab({ category }: WidgetTabProps) {
             </div>
 
             {/* SECTION 3: BUSINESS DETAILS */}
-            <div className="bg-white border border-gray-155 rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-6">
+            <div className="bg-white border border-gray-155 rounded-2xl p-6 md:p-8 shadow-[0_2px_8px_rgba(0,0,0,0.02)] space-y-6 font-sans">
               <div className="flex justify-between items-center border-b border-gray-100 pb-4">
                 <div>
-                  <h3 className="text-[18px] font-bold text-gray-900 tracking-tight">Business Profile Details</h3>
+                  <h3 className="text-[18px] font-bold text-gray-900 tracking-tight font-sans">Business Profile Details</h3>
                   <p className="text-xs text-gray-400 font-semibold mt-0.5">Corporate identities and contact records</p>
                 </div>
                 <button
                   onClick={() => setIsEditingDetails(!isEditingDetails)}
-                  className="px-3.5 py-1.5 border border-gray-150 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-55 transition-all"
+                  className="px-3.5 py-1.5 border border-gray-150 rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-55 transition-all cursor-pointer"
                 >
                   {isEditingDetails ? "Cancel" : "Edit Profile"}
                 </button>
               </div>
 
-              <form onSubmit={handleSaveDetails} className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Business Name</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.businessName}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, businessName: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Owner Full Name</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.ownerName}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, ownerName: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Store Username</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.storeUsername || ""}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, storeUsername: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-55/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Business Email</label>
-                  <input
-                    type="email"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.email}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Support Phone Number</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.phone}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">WhatsApp Business API Number</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.phone}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-
-                <div className="space-y-1.5 sm:col-span-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Business Address</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.address}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, address: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-55/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">City</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={(detailsForm as unknown as Record<string, string>).city || ""}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, ...(({ city: e.target.value }) as unknown as Partial<typeof detailsForm>) })}
-                    placeholder="Enter city"
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold placeholder:text-gray-300"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">State</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={(detailsForm as unknown as Record<string, string>).state || ""}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, ...(({ state: e.target.value }) as unknown as Partial<typeof detailsForm>) })}
-                    placeholder="Enter state"
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold placeholder:text-gray-300"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Country</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.country}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, country: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">GST Number (GSTIN)</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.gstNumber}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, gstNumber: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Corporate License Number</label>
-                  <input
-                    type="text"
-                    disabled={!isEditingDetails}
-                    value={detailsForm.licenseNumber}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, licenseNumber: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold font-mono"
-                  />
-                </div>
-                <div className="space-y-1.5 sm:col-span-3">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Business Description</label>
-                  <textarea
-                    disabled={!isEditingDetails}
-                    value={detailsForm.businessDescription}
-                    onChange={(e) => setDetailsForm({ ...detailsForm, businessDescription: e.target.value })}
-                    className="w-full bg-white border border-gray-200 rounded-xl px-4.5 py-2.5 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 disabled:bg-gray-50/50 disabled:text-gray-500 transition-all font-semibold min-h-[80px]"
-                  />
-                </div>
-
-                {isEditingDetails && (
+              {isEditingDetails ? (
+                <form onSubmit={handleSaveDetails} className="grid grid-cols-1 sm:grid-cols-3 gap-6 font-sans">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Business Name</label>
+                    <input
+                      type="text"
+                      value={detailsForm.businessName}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, businessName: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Owner Full Name</label>
+                    <input
+                      type="text"
+                      value={detailsForm.ownerName}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, ownerName: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Business Email</label>
+                    <input
+                      type="email"
+                      value={detailsForm.email}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, email: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Support Phone Number</label>
+                    <input
+                      type="text"
+                      value={detailsForm.phone}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, phone: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Country</label>
+                    <input
+                      type="text"
+                      value={detailsForm.country}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, country: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Timezone</label>
+                    <input
+                      type="text"
+                      value={detailsForm.timezone}
+                      onChange={(e) => setDetailsForm({ ...detailsForm, timezone: e.target.value })}
+                      className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-600 font-semibold"
+                    />
+                  </div>
                   <div className="sm:col-span-3 flex justify-end">
                     <button
                       type="submit"
@@ -1142,10 +1057,85 @@ export function MyShopTab({ category }: WidgetTabProps) {
                       Save Changes
                     </button>
                   </div>
-                )}
-              </form>
-            </div>
+                </form>
+              ) : (
+                <div className="flex flex-col md:flex-row gap-8 items-start md:items-center font-sans">
+                  {/* Logo View */}
+                  <div className="h-24 w-24 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm shrink-0">
+                    {profile.businessLogo ? (
+                      <img src={profile.businessLogo} alt="Logo" className="h-full w-full object-cover" />
+                    ) : (
+                      <Store className="h-10 w-10 text-slate-350" />
+                    )}
+                  </div>
 
+                  {/* Profile Key-Value Fields Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-8 w-full text-xs font-semibold">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Business Name</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-slate-900 font-bold text-[13px]">{profile.businessName || "—"}</span>
+                        {profile.businessVerificationStatus === "Verified" && (
+                          <span className="inline-flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full p-0.5" title="Verified">
+                            <Check size={10} className="stroke-[3]" />
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Business Category</span>
+                      <span className="text-slate-800 text-[13px] font-bold uppercase">{profile.businessCategory || "—"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Owner Name</span>
+                      <span className="text-slate-800 text-[13px] font-bold">{profile.ownerName || "—"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Email Address</span>
+                      <span className="text-slate-800 font-medium">{profile.email || "—"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Phone Number</span>
+                      <span className="text-slate-800 font-medium">{profile.phone || "—"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Country / Currency</span>
+                      <span className="text-slate-800 font-bold">{(profile.country || "—") + " (" + (profile.currency || "—") + ")"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Timezone</span>
+                      <span className="text-slate-800 font-medium">{profile.timezone || "—"}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Store Status</span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase",
+                        profile.businessStatus === "Online" ? "text-emerald-600" : "text-slate-400"
+                      )}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full", profile.businessStatus === "Online" ? "bg-emerald-500 animate-pulse" : "bg-slate-350")} />
+                        {profile.businessStatus || "Offline"}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">WhatsApp Status</span>
+                      <span className={cn(
+                        "inline-flex items-center gap-1.5 text-[10px] font-bold uppercase",
+                        profile.whatsappStatus === "Connected" ? "text-emerald-600" : "text-amber-600"
+                      )}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full", profile.whatsappStatus === "Connected" ? "bg-emerald-500 animate-pulse" : "bg-slate-350")} />
+                        {profile.whatsappStatus || "Disconnected"}
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active Subscription</span>
+                      <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-100 text-[9px] font-black uppercase tracking-wider">
+                        {profile.subscriptionPlan || "Free"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
             {/* Grid for Operating Hours & Delivery Settings */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               
@@ -1334,7 +1324,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                   >
                     Toggle Empty State
                   </button>
-                  <button onClick={() => alert("Navigating to orders page.")} className="px-3.5 py-1.5 border border-gray-155 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-700 transition-colors">
+                  <button onClick={() => showToast("Navigating to orders page...", "info")} className="px-3.5 py-1.5 border border-gray-155 rounded-xl hover:bg-gray-50 text-xs font-bold text-gray-700 transition-colors">
                     View All
                   </button>
                 </div>
@@ -1482,7 +1472,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                         {/* Interactive toggle */}
                         <button
                           onClick={() => {
-                            alert("Stock availability changed for: " + product.name);
+                            showToast("Stock status updated for " + product.name, "success");
                           }}
                           className={cn(
                             "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border border-transparent transition-colors duration-200 focus:outline-none",
@@ -1592,7 +1582,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                 </p>
                 <div className="flex justify-between items-center text-xs pt-2">
                   <span className="text-gray-455 font-bold">Autosync catalogs</span>
-                  <button onClick={() => alert("WhatsApp catalog autosync toggled.")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-bold transition-all">Toggle Enabled</button>
+                  <button onClick={() => showToast("WhatsApp catalog sync setting updated.", "success")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-bold transition-all">Toggle Enabled</button>
                 </div>
               </div>
 
@@ -1607,7 +1597,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                 </p>
                 <div className="flex justify-between items-center text-xs pt-2">
                   <span className="text-gray-455 font-bold">Display catalog badge overlays</span>
-                  <button onClick={() => alert("Badge display configuration adjusted.")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-bold transition-all">Adjust Visibility</button>
+                  <button onClick={() => showToast("Badge visibility configuration updated.", "success")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-xl font-bold transition-all">Adjust Visibility</button>
                 </div>
               </div>
 
@@ -1642,8 +1632,8 @@ export function MyShopTab({ category }: WidgetTabProps) {
                 </div>
 
                 <div className="space-y-2 pt-4">
-                  <button onClick={() => alert("Downloading PDF poster package...")} className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-800 rounded-xl transition-colors">Download Poster PDF</button>
-                  <button onClick={() => alert("Regenerated store link codes.")} className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-800 rounded-xl transition-colors">Regenerate QR Code</button>
+                  <button onClick={() => showToast("Generating PDF poster package...", "info")} className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-800 rounded-xl transition-colors">Download Poster PDF</button>
+                  <button onClick={() => showToast("Store QR codes regenerated.", "success")} className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 font-bold text-xs text-gray-800 rounded-xl transition-colors">Regenerate QR Code</button>
                 </div>
               </div>
 
@@ -1661,7 +1651,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                     ].map((themeOpt) => (
                       <div
                         key={themeOpt.name}
-                        onClick={() => alert("Theme applied: " + themeOpt.name)}
+                        onClick={() => showToast("Applied theme: " + themeOpt.name, "success")}
                         className={cn("p-4 border rounded-xl cursor-pointer text-center text-xs font-bold transition-all hover:scale-102", themeOpt.colors)}
                       >
                         {themeOpt.name}
@@ -1719,7 +1709,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                       const fee = Number(prompt("Enter delivery charge (â‚¹):") || 0);
                       if (name) {
                         addDeliveryZone({ name, charges: fee, minAmount: 500 });
-                        alert("Zone added successfully!");
+                        showToast("Delivery zone added successfully!", "success");
                       }
                     }}
                     className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-150 px-2 py-0.5 rounded uppercase"
@@ -1782,7 +1772,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
               </div>
 
               <div className="flex gap-2 justify-end pt-2">
-                <button onClick={() => alert("Webhook reconnected.")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-lg text-xs font-bold text-gray-700 transition-colors">Reconnect API</button>
+                <button onClick={() => showToast("Webhook reconnected successfully.", "success")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 rounded-lg text-xs font-bold text-gray-700 transition-colors">Reconnect API</button>
                 <button onClick={() => updateProfile({ whatsappStatus: "Disconnected" })} className="px-3 py-1.5 border border-red-200 hover:bg-red-50 rounded-lg text-xs font-bold text-red-650 transition-colors">Disconnect</button>
               </div>
             </div>
@@ -1824,7 +1814,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                   </div>
                 </div>
                 <div className="flex justify-end pt-3">
-                  <button onClick={() => alert("Custom domain mapping wizard opened.")} className="px-3.5 py-1.5 border border-gray-200 hover:bg-gray-55 rounded-xl text-xs font-bold text-gray-755 transition-colors">Configure Custom Domain</button>
+                  <button onClick={() => showToast("Custom domain mapping setup initiated.", "info")} className="px-3.5 py-1.5 border border-gray-200 hover:bg-gray-55 rounded-xl text-xs font-bold text-gray-755 transition-colors">Configure Custom Domain</button>
                 </div>
               </div>
 
@@ -1930,7 +1920,7 @@ export function MyShopTab({ category }: WidgetTabProps) {
                       onClick={() => {
                         const next = (profile.flowConfirmationMode === "Auto" ? "Manual" : "Auto");
                         updateProfile({ flowConfirmationMode: next });
-                        alert("Confirmation Flow configured to: " + next);
+                        showToast("Order confirmation flow set to: " + next, "success");
                       }}
                       className="px-3 py-1 border border-gray-200 hover:bg-gray-50 font-bold rounded-lg transition-colors"
                     >
@@ -1995,7 +1985,7 @@ export function BranchesTab({ category }: WidgetTabProps) {
     setAddress("");
     setPhone("");
     setIsOpen(false);
-    alert("Branch logged.");
+    showToast("Branch registered successfully!", "success");
   };
 
   return (
@@ -2106,7 +2096,7 @@ export function StaffTab({ category }: WidgetTabProps) {
     setEmail("");
     setPhone("");
     setIsOpen(false);
-    alert("Staff member logged.");
+    showToast("Staff member registered successfully!", "success");
   };
 
   return (
@@ -2168,37 +2158,51 @@ export function StaffTab({ category }: WidgetTabProps) {
             </form>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[14px] md:text-[15px] border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-6">Staff ID</th>
-                  <th className="py-3 px-6">Name</th>
-                  <th className="py-3 px-6">Role</th>
-                  <th className="py-3 px-6">Contact</th>
-                  <th className="py-3 px-6">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {staff.map(s => (
-                  <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4 px-6 font-mono font-bold text-blue-600">{s.id}</td>
-                    <td className="py-4 px-6 font-bold text-gray-900">{s.name}</td>
-                    <td className="py-4 px-6 text-gray-500 font-semibold">{s.role}</td>
-                    <td className="py-4 px-6 text-gray-500">
-                      <p className="font-mono">{s.phone}</p>
-                      <p className="text-[11px] text-gray-400">{s.email}</p>
-                    </td>
-                    <td className="py-4 px-6">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">
-                        {s.status}
-                      </span>
-                    </td>
+          {staff.length === 0 ? (
+            <div className="py-6">
+              <EmptyState
+                icon={<Users size={22} />}
+                title="No Staff Registered"
+                description="Register your employee roles to grant dashboard access controls."
+                action={{
+                  label: "Add Member",
+                  onClick: () => setIsOpen(true)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[14px] md:text-[15px] border-collapse font-sans">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-6">Staff ID</th>
+                    <th className="py-3 px-6">Name</th>
+                    <th className="py-3 px-6">Role</th>
+                    <th className="py-3 px-6">Contact</th>
+                    <th className="py-3 px-6">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {staff.map(s => (
+                    <tr key={s.id} className="border-b border-gray-50 hover:bg-gray-55/50 transition-colors font-sans">
+                      <td className="py-4 px-6 font-mono font-bold text-blue-600">{s.id}</td>
+                      <td className="py-4 px-6 font-bold text-gray-900">{s.name}</td>
+                      <td className="py-4 px-6 text-gray-500 font-semibold">{s.role}</td>
+                      <td className="py-4 px-6 text-gray-500">
+                        <p className="font-mono">{s.phone}</p>
+                        <p className="text-[11px] text-gray-400">{s.email}</p>
+                      </td>
+                      <td className="py-4 px-6">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">
+                          {s.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Audit Sessions History (1 col) */}
@@ -2234,7 +2238,7 @@ export function HoursTab({ category }: WidgetTabProps) {
     e.preventDefault();
     updateProfile({ businessHours: hours });
     setIsEditing(false);
-    alert("Hours updated in state.");
+    showToast("Business operating hours updated.", "success");
   };
 
   return (
@@ -2305,11 +2309,11 @@ export function HardwareTab({ category }: WidgetTabProps) {
     setName("");
     setIpAddress("");
     setIsOpen(false);
-    alert("Printer configuration registered.");
+    showToast("Printer device configuration saved.", "success");
   };
 
   const handleTestPrint = (pName: string) => {
-    alert(`Test print job submitted to: ${pName}. Thermal print test complete.`);
+    showToast(`Test print job submitted to ${pName}. Check printer output.`, "info");
   };
 
   return (
@@ -2379,50 +2383,64 @@ export function HardwareTab({ category }: WidgetTabProps) {
             </form>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[14px] border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-6">Device ID</th>
-                  <th className="py-3 px-6">Nickname</th>
-                  <th className="py-3 px-6">IP Endpoint</th>
-                  <th className="py-3 px-6">Status</th>
-                  <th className="py-3 px-6">Test Print</th>
-                </tr>
-              </thead>
-              <tbody>
-                {printers.map(p => (
-                  <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4.5 px-6 font-mono font-bold text-blue-600">{p.id}</td>
-                    <td className="py-4.5 px-6">
-                      <p className="font-bold text-gray-900">{p.name}</p>
-                      <p className="text-[10px] text-gray-400 font-semibold">{p.type} â€¢ {p.paperWidth}</p>
-                    </td>
-                    <td className="py-4.5 px-6 font-mono text-gray-500">{p.ipAddress}</td>
-                    <td className="py-4.5 px-6">
-                      <button
-                        onClick={() => togglePrinter(p.id)}
-                        className={cn(
-                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border cursor-pointer",
-                          p.status === "Online" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"
-                        )}
-                      >
-                        {p.status}
-                      </button>
-                    </td>
-                    <td className="py-4.5 px-6">
-                      <button
-                        onClick={() => handleTestPrint(p.name)}
-                        className="p-1 px-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-[10px] font-bold text-gray-700 cursor-pointer"
-                      >
-                        Test print
-                      </button>
-                    </td>
+          {printers.length === 0 ? (
+            <div className="py-6 font-sans">
+              <EmptyState
+                icon={<Printer size={22} />}
+                title="No Printers Configured"
+                description="Link thermal receipt printers or kitchen print stations via IP network endpoints."
+                action={{
+                  label: "Link Printer",
+                  onClick: () => setIsOpen(true)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[14px] border-collapse font-sans">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-6">Device ID</th>
+                    <th className="py-3 px-6">Nickname</th>
+                    <th className="py-3 px-6">IP Endpoint</th>
+                    <th className="py-3 px-6">Status</th>
+                    <th className="py-3 px-6">Test Print</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {printers.map(p => (
+                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4.5 px-6 font-mono font-bold text-blue-600">{p.id}</td>
+                      <td className="py-4.5 px-6">
+                        <p className="font-bold text-gray-900">{p.name}</p>
+                        <p className="text-[10px] text-gray-400 font-semibold">{p.type} • {p.paperWidth}</p>
+                      </td>
+                      <td className="py-4.5 px-6 font-mono text-gray-500">{p.ipAddress}</td>
+                      <td className="py-4.5 px-6">
+                        <button
+                          onClick={() => togglePrinter(p.id)}
+                          className={cn(
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border cursor-pointer",
+                            p.status === "Online" ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"
+                          )}
+                        >
+                          {p.status}
+                        </button>
+                      </td>
+                      <td className="py-4.5 px-6">
+                        <button
+                          onClick={() => handleTestPrint(p.name)}
+                          className="p-1 px-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-[10px] font-bold text-gray-700 cursor-pointer"
+                        >
+                          Test print
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Hardware Diagnostics logs (1 col) */}
@@ -2460,6 +2478,28 @@ export function OrdersTab({ category }: WidgetTabProps) {
 
   const categoryOrders = orders[category] || [];
 
+  if (categoryOrders.length === 0) {
+    return (
+      <PageWrapper
+        title="Orders Board"
+        description="Track transaction statuses, view timelines, and dispatch tracking confirmations"
+        category={category}
+      >
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-8 flex items-center justify-center min-h-[400px]">
+          <EmptyState
+            icon={<ShoppingCart size={28} />}
+            title="No Orders Received Yet"
+            description="Orders placed by customers through your WhatsApp store will appear here in real-time."
+            action={{
+              label: "Awaiting Backend Integration",
+              onClick: () => showToast("Setup meta developer account to connect orders.", "info")
+            }}
+          />
+        </div>
+      </PageWrapper>
+    );
+  }
+
   const filtered = categoryOrders.filter(o => {
     const matchesSearch = o.customer.toLowerCase().includes(searchVal.toLowerCase()) || o.id.toLowerCase().includes(searchVal.toLowerCase());
     const matchesFilter = filterStatus === "All" || o.status === filterStatus;
@@ -2474,7 +2514,7 @@ export function OrdersTab({ category }: WidgetTabProps) {
       description="Track transaction statuses, view timelines, and dispatch tracking confirmations"
       category={category}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 font-sans">
         
         {/* Table & Filters (2 cols) */}
         <div className="lg:col-span-2 space-y-6">
@@ -2605,7 +2645,7 @@ export function OrdersTab({ category }: WidgetTabProps) {
                   <button
                     onClick={() => {
                       updateOrderStatus(category, selectedOrder.id, "Completed");
-                      alert("Marked Completed");
+                      showToast("Order marked as Completed.", "success");
                     }}
                     className="flex-1 py-2.5 rounded-xl bg-green-600 text-white font-bold text-xs hover:bg-green-700 cursor-pointer text-center shadow-md shadow-green-500/10"
                   >
@@ -2614,7 +2654,7 @@ export function OrdersTab({ category }: WidgetTabProps) {
                   <button
                     onClick={() => {
                       updateOrderStatus(category, selectedOrder.id, "Cancelled");
-                      alert("Marked Cancelled");
+                      showToast("Order marked as Cancelled.", "error");
                     }}
                     className="py-2.5 px-3 rounded-xl border border-red-200 text-red-650 hover:bg-red-50 text-xs font-bold cursor-pointer"
                   >
@@ -2664,7 +2704,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
     setSecondary("");
     setStock("");
     setIsOpen(false);
-    alert("Item added.");
+    showToast("Catalog item added successfully!", "success");
   };
 
   return (
@@ -2680,8 +2720,8 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
           <div className="flex justify-between items-center border-b border-gray-100 pb-4">
             <h3 className="text-[20px] font-semibold text-gray-900 tracking-tight font-sans">Active catalog items</h3>
             <div className="flex gap-2 font-bold">
-              <button onClick={() => alert("Importing product CSV file...")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-xs rounded-lg transition-colors cursor-pointer">Import CSV</button>
-              <button onClick={() => alert("Exporting product CSV sheet...")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-xs rounded-lg transition-colors cursor-pointer">Export CSV</button>
+              <button onClick={() => showToast("Importing product catalog CSV...", "info")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-xs rounded-lg transition-colors cursor-pointer">Import CSV</button>
+              <button onClick={() => showToast("Exporting product catalog CSV...", "info")} className="px-3 py-1.5 border border-gray-200 hover:bg-gray-50 text-xs rounded-lg transition-colors cursor-pointer">Export CSV</button>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="text-xs bg-blue-600 text-white px-3.5 py-2 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
@@ -2730,52 +2770,66 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
             </form>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[14px] border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-6">ID</th>
-                  <th className="py-3 px-6">Name</th>
-                  <th className="py-3 px-6">Variant / Addon</th>
-                  <th className="py-3 px-6">Price</th>
-                  <th className="py-3 px-6">Availability</th>
-                  <th className="py-3 px-6">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {categoryProducts.map(p => {
-                  const stockVal = p.stock !== undefined ? p.stock : 14;
-                  return (
-                    <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                      <td className="py-4 px-6 font-mono font-bold text-gray-400">{p.id}</td>
-                      <td className="py-4 px-6 font-bold text-gray-900">{p.name}</td>
-                      <td className="py-4 px-6 text-gray-500 text-xs">
-                        <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-600 font-mono font-bold uppercase tracking-wider text-[9px] mr-1">Standard</span>
-                        <span className="text-[10px] text-gray-400">No Addon</span>
-                      </td>
-                      <td className="py-4 px-6 font-black text-gray-900">â‚¹{p.price}</td>
-                      <td className="py-4 px-6">
-                        <span className={cn(
-                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                          stockVal < 5 ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"
-                        )}>
-                          {stockVal < 5 ? `Low (${stockVal})` : "In Stock"}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6">
-                        <button
-                          onClick={() => { deleteItem(category, p.id); alert("Deleted."); }}
-                          className="p-1 text-gray-400 hover:text-red-650 transition-colors cursor-pointer"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {categoryProducts.length === 0 ? (
+            <div className="py-6 font-sans">
+              <EmptyState
+                icon={<Layers size={22} />}
+                title="Catalog is Empty"
+                description={`You haven't added any items to your ${config.catalogLabel} catalog yet.`}
+                action={{
+                  label: "Add First Item",
+                  onClick: () => setIsOpen(true)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto font-sans">
+              <table className="w-full text-left text-[14px] border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-6">ID</th>
+                    <th className="py-3 px-6">Name</th>
+                    <th className="py-3 px-6">Variant / Addon</th>
+                    <th className="py-3 px-6">Price</th>
+                    <th className="py-3 px-6">Availability</th>
+                    <th className="py-3 px-6">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categoryProducts.map(p => {
+                    const stockVal = p.stock !== undefined ? p.stock : 14;
+                    return (
+                      <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                        <td className="py-4 px-6 font-mono font-bold text-gray-400">{p.id}</td>
+                        <td className="py-4 px-6 font-bold text-gray-900">{p.name}</td>
+                        <td className="py-4 px-6 text-gray-500 text-xs">
+                          <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-655 font-mono font-bold uppercase tracking-wider text-[9px] mr-1">Standard</span>
+                          <span className="text-[10px] text-gray-400">No Addon</span>
+                        </td>
+                        <td className="py-4 px-6 font-black text-gray-900">₹{p.price}</td>
+                        <td className="py-4 px-6">
+                          <span className={cn(
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                            stockVal < 5 ? "bg-red-50 text-red-700 border border-red-200" : "bg-green-50 text-green-700 border border-green-200"
+                          )}>
+                            {stockVal < 5 ? `Low (${stockVal})` : "In Stock"}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6">
+                          <button
+                            onClick={() => { deleteItem(category, p.id); showToast("Catalog item deleted successfully.", "success"); }}
+                            className="p-1 text-gray-400 hover:text-red-655 transition-colors cursor-pointer"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Right Side: Combos catalog (1 col) */}
@@ -2798,7 +2852,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
               </div>
             ))}
             <button
-              onClick={() => alert("Submit new combo item layout config.")}
+              onClick={() => showToast("Combo product configuration updated.", "success")}
               className="w-full py-2.5 rounded-xl border border-dashed border-gray-300 text-gray-500 hover:text-gray-900 hover:border-gray-400 font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus size={14} />
@@ -2861,7 +2915,7 @@ export function InventoryTab({ category }: WidgetTabProps) {
         <div className="flex justify-between items-center border-b border-gray-100 pb-4">
           <h3 className="text-[20px] font-semibold text-gray-900 tracking-tight">SKU Ledger</h3>
           <button
-            onClick={() => alert("Low stock replenishment queued in system logs.")}
+            onClick={() => showToast("Stock replenishment request logged.", "info")}
             className="text-xs font-bold bg-blue-600 text-white px-3.5 py-2 rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
             <Plus size={14} />
@@ -2915,6 +2969,25 @@ export function CustomersTab({ category, config }: WidgetTabProps) {
   const [selectedCustId, setSelectedCustId] = useState<string | null>(null);
 
   const list = customers[category] || [];
+
+  if (list.length === 0) {
+    return (
+      <PageWrapper
+        title={`${config.customersLabel} Directory`}
+        description={`Review patient diagnostics history, VIP labels, and lifetime value segments`}
+        category={category}
+      >
+        <div className="bg-white border border-slate-200/80 rounded-3xl p-8 flex items-center justify-center min-h-[400px]">
+          <EmptyState
+            icon={<Users size={28} />}
+            title={`No ${config.customersLabel} Yet`}
+            description={`Customer details logged during purchase flows on WhatsApp will populate here automatically.`}
+          />
+        </div>
+      </PageWrapper>
+    );
+  }
+
   const selectedCustomer = list.find(c => c.id === selectedCustId);
 
   return (
@@ -2923,7 +2996,7 @@ export function CustomersTab({ category, config }: WidgetTabProps) {
       description={`Review patient diagnostics history, VIP labels, and lifetime value segments`}
       category={category}
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 font-sans">
         
         {/* CRM Customers list (2 cols) */}
         <div className="lg:col-span-2 bg-white border border-gray-150 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.03),0_12px_24px_-4px_rgba(0,0,0,0.015)] overflow-hidden">
@@ -3030,7 +3103,7 @@ export function CouponsTab({ category }: WidgetTabProps) {
     setDiscount("");
     setExpiry("");
     setIsOpen(false);
-    alert("Coupon added.");
+    showToast("Promo coupon added successfully!", "success");
   };
 
   return (
@@ -3082,34 +3155,46 @@ export function CouponsTab({ category }: WidgetTabProps) {
           </form>
         )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-[14px] border-collapse">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-6">Coupon Code</th>
-                <th className="py-3 px-6">Discount Rate</th>
-                <th className="py-3 px-6">Expiry</th>
-                <th className="py-3 px-6">Uses Count</th>
-                <th className="py-3 px-6">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map(c => (
-                <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-6 font-mono font-bold text-blue-600">{c.code}</td>
-                  <td className="py-4 px-6 font-bold text-gray-900">{c.discount}</td>
-                  <td className="py-4 px-6 text-gray-500">{c.expiry}</td>
-                  <td className="py-4 px-6 text-gray-500 font-semibold">{c.usage} times</td>
-                  <td className="py-4 px-6">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">
-                      {c.status}
-                    </span>
-                  </td>
+        {coupons.length === 0 ? (
+          <EmptyState
+            icon={<Percent size={22} />}
+            title="No Active Coupons"
+            description="Create promotional discount rules to share with WhatsApp buyers during checkout flows."
+            action={{
+              label: "Create Coupon",
+              onClick: () => setIsOpen(true)
+            }}
+          />
+        ) : (
+          <div className="overflow-x-auto font-sans">
+            <table className="w-full text-left text-[14px] border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-6">Coupon Code</th>
+                  <th className="py-3 px-6">Discount Rate</th>
+                  <th className="py-3 px-6">Expiry</th>
+                  <th className="py-3 px-6">Uses Count</th>
+                  <th className="py-3 px-6">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {coupons.map(c => (
+                  <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="py-4 px-6 font-mono font-bold text-blue-600">{c.code}</td>
+                    <td className="py-4 px-6 font-bold text-gray-900">{c.discount}</td>
+                    <td className="py-4 px-6 text-gray-500">{c.expiry}</td>
+                    <td className="py-4 px-6 text-gray-500 font-semibold">{c.usage} times</td>
+                    <td className="py-4 px-6">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-50 text-green-700 border border-green-200">
+                        {c.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </PageWrapper>
   );
@@ -3120,39 +3205,54 @@ export function CouponsTab({ category }: WidgetTabProps) {
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function CampaignsTab({ category }: WidgetTabProps) {
   const [templates] = useState([
-    { name: "Monsoon Clearance Blast", template: "monsoon_clearance_50", channel: "WhatsApp API", cost: "â‚¹0.82 / delivery" },
-    { name: "Festival Season Warmup", template: "diwali_festival_greet", channel: "WhatsApp API", cost: "â‚¹0.82 / delivery" },
+    { name: "Monsoon Clearance Blast", template: "monsoon_clearance_50", channel: "WhatsApp API", cost: "₹0.82 / delivery" },
+    { name: "Festival Season Warmup", template: "diwali_festival_greet", channel: "WhatsApp API", cost: "₹0.82 / delivery" },
   ]);
 
   return (
     <PageWrapper
       title="Marketing Campaigns"
-      description="Create bulk notification templates and schedule Meta Cloud api campaigns"
+      description="Create bulk notification templates and schedule Meta Cloud API campaigns"
       category={category}
     >
-      <div className="bg-white border border-gray-155 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.03),0_12px_24px_-4px_rgba(0,0,0,0.015)] p-6 space-y-6">
-        <h3 className="text-[20px] font-semibold text-gray-900 border-b border-gray-100 pb-4">Templates</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {templates.map((t, idx) => (
-            <div key={idx} className="p-5 rounded-2xl border border-gray-100 bg-white space-y-4 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-md uppercase tracking-wider">{t.channel}</span>
-              <h4 className="text-[16px] font-bold text-gray-900 pt-1 leading-tight">{t.name}</h4>
-              <p className="text-xs text-gray-500">Meta Template ID: <span className="font-mono text-gray-700 font-semibold">{t.template}</span></p>
-              <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
-                <span className="text-gray-400 font-medium">{t.cost}</span>
-                <button onClick={() => alert("Monsoon campaign queued.")} className="text-xs font-bold text-blue-600 hover:underline cursor-pointer">Queue Blast &rarr;</button>
+      <div className="space-y-6">
+        {/* Awaiting Backend Integration Banner */}
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-5 flex items-start gap-4 shadow-sm font-sans">
+          <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0 border border-amber-200">
+            <Info size={18} />
+          </div>
+          <div>
+            <p className="text-xs font-black text-amber-900 uppercase tracking-wider">Awaiting Backend Integration</p>
+            <p className="text-[11px] text-amber-800/80 font-medium leading-relaxed mt-0.5">
+              WhatsApp Broadcast campaigns and template queue options are disabled until your Meta Business Cloud API profile is activated by the administrator.
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-white border border-gray-155 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.03),0_12px_24px_-4px_rgba(0,0,0,0.015)] p-6 space-y-6">
+          <h3 className="text-[20px] font-semibold text-gray-900 border-b border-gray-100 pb-4 font-sans">Templates</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 font-sans">
+            {templates.map((t, idx) => (
+              <div key={idx} className="p-5 rounded-2xl border border-gray-100 bg-white space-y-4 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2.5 py-0.5 rounded-md uppercase tracking-wider">{t.channel}</span>
+                  <span className="text-[9px] font-black text-amber-700 bg-amber-50 border border-amber-150 px-2 py-0.5 rounded uppercase">Awaiting Backend</span>
+                </div>
+                <h4 className="text-[16px] font-bold text-gray-900 pt-1 leading-tight">{t.name}</h4>
+                <p className="text-xs text-gray-500">Meta Template ID: <span className="font-mono text-gray-700 font-semibold">{t.template}</span></p>
+                <div className="pt-3 border-t border-gray-100 flex justify-between items-center text-xs">
+                  <span className="text-gray-400 font-medium">{t.cost}</span>
+                  <button onClick={() => showToast("Awaiting Backend Integration — Setup your WhatsApp API connection first.", "error")} className="text-xs font-bold text-slate-400 hover:text-slate-500 cursor-pointer">Queue Blast &rarr;</button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </PageWrapper>
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* â”€â”€â”€ 13. BROADCASTS TAB â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function BroadcastsTab({ category }: WidgetTabProps) {
   const { campaigns } = useWorkspaceStore();
   const list = campaigns[category] || [];
@@ -3163,40 +3263,51 @@ export function BroadcastsTab({ category }: WidgetTabProps) {
       description="Inspect delivery logs, delivery telemetry, and click-through rates from Meta API streams"
       category={category}
     >
-      <div className="bg-white border border-gray-150 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.03),0_12px_24px_-4px_rgba(0,0,0,0.015)] p-6 space-y-6">
-        <h3 className="text-[20px] font-semibold text-gray-900 border-b border-gray-100 pb-4">Broadcast Archives</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-[14px] border-collapse">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                <th className="py-3 px-6">Campaign Name</th>
-                <th className="py-3 px-6">Template ID</th>
-                <th className="py-3 px-6">Volume Sent</th>
-                <th className="py-3 px-6">Open Rate</th>
-                <th className="py-3 px-6">Dispatched Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.map((c, idx) => (
-                <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-6 font-bold text-gray-900">{c.name}</td>
-                  <td className="py-4 px-6 font-mono text-gray-500">{c.template}</td>
-                  <td className="py-4 px-6 text-gray-900 font-semibold">{c.sent.toLocaleString()} list</td>
-                  <td className="py-4 px-6 font-bold text-green-600">{c.readRate}% Read</td>
-                  <td className="py-4 px-6 text-gray-500">{c.date}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="bg-white border border-gray-150 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.03),0_12px_24px_-4px_rgba(0,0,0,0.015)] p-6 space-y-6 font-sans">
+        <div className="flex justify-between items-center border-b border-gray-100 pb-4">
+          <h3 className="text-[20px] font-semibold text-gray-900">Broadcast Archives</h3>
+          <span className="px-2.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-700 text-[9px] font-black uppercase tracking-wider">
+            Awaiting Backend Integration
+          </span>
         </div>
+
+        {list.length === 0 ? (
+          <EmptyState
+            icon={<Megaphone size={22} />}
+            title="No Broadcast Logs"
+            description="Campaign broadcast history and delivery telemetry records will populate here once campaigns are active."
+          />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[14px] border-collapse">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                  <th className="py-3 px-6">Campaign Name</th>
+                  <th className="py-3 px-6">Template ID</th>
+                  <th className="py-3 px-6">Volume Sent</th>
+                  <th className="py-3 px-6">Open Rate</th>
+                  <th className="py-3 px-6">Dispatched Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((c, idx) => (
+                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors">
+                    <td className="py-4 px-6 font-bold text-gray-900">{c.name}</td>
+                    <td className="py-4 px-6 font-mono text-gray-550">{c.template}</td>
+                    <td className="py-4 px-6 text-gray-900 font-semibold">{c.sent.toLocaleString()} list</td>
+                    <td className="py-4 px-6 font-bold text-green-600">{c.readRate}% Read</td>
+                    <td className="py-4 px-6 text-gray-500">{c.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </PageWrapper>
   );
 }
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* â”€â”€â”€ 14. CHATS TAB (INBOX) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 export function ChatsTab({ category }: WidgetTabProps) {
   const { chats, addMessageToChat } = useWorkspaceStore();
   const [activeChatId, setActiveChatId] = useState("");
@@ -3495,7 +3606,7 @@ export function InvoicesTab({ category }: WidgetTabProps) {
                   <td className="py-4 px-6 font-black text-gray-900">â‚¹{inv.total}</td>
                   <td className="py-4 px-6 text-gray-500">{inv.date}</td>
                   <td className="py-4 px-6">
-                    <button onClick={() => alert("Downloading PDF Invoice...")} className="p-1 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer">
+                    <button onClick={() => showToast("Downloading transaction PDF invoice...", "info")} className="p-1 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer">
                       <Download size={14} />
                     </button>
                   </td>
@@ -3516,7 +3627,7 @@ export function PayoutsTab({ category }: WidgetTabProps) {
   const { payouts } = useWorkspaceStore();
 
   const handleRequestPayout = () => {
-    alert("Payout request submitted. Settlement will process in 24 business hours.");
+    showToast("Payout request submitted. Will settle within 24 business hours.", "info");
   };
 
   return (
@@ -3930,7 +4041,7 @@ export function ReportIssueTab({ category }: WidgetTabProps) {
     setSubject("");
     setDesc("");
     setIsOpen(false);
-    alert("Support ticket logged successfully.");
+    showToast("Support ticket logged successfully.", "success");
   };
 
   return (
@@ -4014,40 +4125,54 @@ export function ReportIssueTab({ category }: WidgetTabProps) {
             </form>
           )}
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-[14px] border-collapse">
-              <thead>
-                <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
-                  <th className="py-3 px-6">Ticket ID</th>
-                  <th className="py-3 px-6">Category</th>
-                  <th className="py-3 px-6">Subject</th>
-                  <th className="py-3 px-6">Date</th>
-                  <th className="py-3 px-6">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tickets.map(t => (
-                  <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
-                    <td className="py-4.5 px-6 font-mono font-bold text-blue-600">{t.id}</td>
-                    <td className="py-4.5 px-6 text-gray-500 font-semibold">{t.category}</td>
-                    <td className="py-4.5 px-6 font-bold text-gray-900">
-                      <p className="leading-tight">{t.subject}</p>
-                      <p className="text-[10px] text-gray-400 font-medium font-sans truncate max-w-xs">{t.description}</p>
-                    </td>
-                    <td className="py-4.5 px-6 text-gray-550">{t.createdAt}</td>
-                    <td className="py-4.5 px-6">
-                      <span className={cn(
-                        "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
-                        t.status === "Open" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-green-50 text-green-700 border border-green-200"
-                      )}>
-                        {t.status}
-                      </span>
-                    </td>
+          {tickets.length === 0 ? (
+            <div className="py-6 font-sans">
+              <EmptyState
+                icon={<AlertCircle size={22} />}
+                title="No Support Tickets"
+                description="Create a support ticket to report platform bugs, service disruptions, or billing issues."
+                action={{
+                  label: "Create Ticket",
+                  onClick: () => setIsOpen(true)
+                }}
+              />
+            </div>
+          ) : (
+            <div className="overflow-x-auto font-sans">
+              <table className="w-full text-left text-[14px] border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50/75 text-gray-400 font-bold uppercase tracking-wider text-[11px]">
+                    <th className="py-3 px-6">Ticket ID</th>
+                    <th className="py-3 px-6">Category</th>
+                    <th className="py-3 px-6">Subject</th>
+                    <th className="py-3 px-6">Date</th>
+                    <th className="py-3 px-6">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {tickets.map(t => (
+                    <tr key={t.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4.5 px-6 font-mono font-bold text-blue-600">{t.id}</td>
+                      <td className="py-4.5 px-6 text-gray-555 font-semibold">{t.category}</td>
+                      <td className="py-4.5 px-6 font-bold text-gray-900">
+                        <p className="leading-tight">{t.subject}</p>
+                        <p className="text-[10px] text-gray-400 font-medium font-sans truncate max-w-xs">{t.description}</p>
+                      </td>
+                      <td className="py-4.5 px-6 text-gray-555">{t.createdAt}</td>
+                      <td className="py-4.5 px-6">
+                        <span className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider",
+                          t.status === "Open" ? "bg-amber-50 text-amber-700 border border-amber-200" : "bg-green-50 text-green-700 border border-green-200"
+                        )}>
+                          {t.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Support Service SLA Widget (1 col) */}
