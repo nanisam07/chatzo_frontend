@@ -102,7 +102,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
                 </span>
               </div>
               <p className="text-xs text-amber-800/80 font-medium leading-relaxed">
-                The Meta Business Suite integration requires the backend server and webhooks to be fully deployed. Once backend configuration goes live, this wizard will initiate Meta's secure OAuth flow to link your Business Manager, register your phone number, bind event hooks, and sync product catalogs.
+                The Meta Business Suite integration requires the backend server and webhooks to be fully deployed. Once backend configuration goes live, this wizard will initiate Meta&apos;s secure OAuth flow to link your Business Manager, register your phone number, bind event hooks, and sync product catalogs.
               </p>
             </div>
           </div>

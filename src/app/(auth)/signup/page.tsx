@@ -4,6 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/client";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import {
   Mail,
   Lock,
@@ -162,18 +164,12 @@ export default function SignupPage() {
     setLoadingText("Creating your account...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          fullName: form.fullName,
-          businessName: form.businessName,
-          email: form.email,
-          password: form.password,
-          confirmPassword: form.confirmPassword,
-        }),
+      const response = await api.post("/api/v1/auth/signup", {
+        fullName: form.fullName,
+        businessName: form.businessName,
+        email: form.email,
+        password: form.password,
+        confirmPassword: form.confirmPassword,
       });
 
       const data = await response.json();
@@ -184,9 +180,10 @@ export default function SignupPage() {
 
       // Redirect to /signup/verify page
       window.location.href = `/signup/verify?email=${encodeURIComponent(form.email)}`;
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to create account");
+      const msg = error instanceof Error ? error.message : "Unable to create account";
+      useWorkspaceStore.getState().showToast(msg, "error");
     } finally {
       setIsLoading(false);
       setLoadingText("");

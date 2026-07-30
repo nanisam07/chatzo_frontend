@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/client";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import {
   Mail,
   ShieldCheck,
@@ -55,15 +57,9 @@ function VerifyEmailForm() {
     setLoadingText("Sending a new verification code...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/resend-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          type: "EMAIL_VERIFICATION",
-        }),
+      const response = await api.post("/api/v1/auth/resend-otp", {
+        email,
+        type: "EMAIL_VERIFICATION",
       });
 
       const data = await response.json();
@@ -77,10 +73,11 @@ function VerifyEmailForm() {
       setOtp(Array(6).fill(""));
       setErrors({});
       otpInputsRef.current[0]?.focus();
-      alert("A new verification code has been sent successfully!");
-    } catch (error: any) {
+      useWorkspaceStore.getState().showToast("A new verification code has been sent successfully!", "success");
+    } catch (error) {
       console.error(error);
-      alert(error.message || "Unable to resend OTP");
+      const msg = error instanceof Error ? error.message : "Unable to resend OTP";
+      useWorkspaceStore.getState().showToast(msg, "error");
     } finally {
       setIsLoading(false);
       setLoadingText("");
@@ -137,16 +134,10 @@ function VerifyEmailForm() {
     setLoadingText("Verifying code...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/verify-otp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          otp: code,
-          type: "EMAIL_VERIFICATION",
-        }),
+      const response = await api.post("/api/v1/auth/verify-otp", {
+        email,
+        otp: code,
+        type: "EMAIL_VERIFICATION",
       });
 
       const data = await response.json();
@@ -166,9 +157,9 @@ function VerifyEmailForm() {
 
       setErrors({});
       window.location.href = "/dashboard";
-    } catch (err: any) {
+    } catch (err) {
       setErrors({
-        otp: err.message || "Verification failed",
+        otp: err instanceof Error ? err.message : "Verification failed",
       });
     } finally {
       setIsLoading(false);

@@ -7,48 +7,46 @@ class ApiClient {
     this.baseUrl = config.apiUrl;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  public async request(endpoint: string, options: RequestInit = {}): Promise<Response> {
     const url = `${this.baseUrl}${endpoint}`;
+    const token = typeof window !== "undefined" ? localStorage.getItem("accessToken") : null;
     const headers = {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     };
-
-    const configOptions = {
-      ...options,
-      headers,
-    };
-
-    try {
-      const response = await fetch(url, configOptions);
-      
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
-      }
-
-      if (response.status === 204) {
-        return {} as T;
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`Request failed at ${url}:`, error);
-      throw error;
-    }
+    return fetch(url, { ...options, headers });
   }
 
-  public get<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+  public get(endpoint: string, options?: RequestInit): Promise<Response> {
+    return this.request(endpoint, { ...options, method: "GET" });
   }
 
-  public post<T>(endpoint: string, data: unknown, options?: RequestInit): Promise<T> {
-    return this.request<T>(endpoint, {
+  public post(endpoint: string, data?: unknown, options?: RequestInit): Promise<Response> {
+    return this.request(endpoint, {
       ...options,
       method: "POST",
-      body: JSON.stringify(data),
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  public put(endpoint: string, data?: unknown, options?: RequestInit): Promise<Response> {
+    return this.request(endpoint, {
+      ...options,
+      method: "PUT",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  public delete(endpoint: string, options?: RequestInit): Promise<Response> {
+    return this.request(endpoint, { ...options, method: "DELETE" });
+  }
+
+  public patch(endpoint: string, data?: unknown, options?: RequestInit): Promise<Response> {
+    return this.request(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: data !== undefined ? JSON.stringify(data) : undefined,
     });
   }
 }

@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/client";
 import {
   Mail,
   Lock,
@@ -218,11 +219,7 @@ export default function LoginPage() {
     if (!email.includes("@")) { setErrorMsg("Please enter a valid email address."); return; }
     setIsLoading(true);
     try {
-      const response = await fetch("http://localhost:5000/api/v1/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+      const response = await api.post("/api/v1/auth/login", { email, password });
       const data = await response.json();
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Invalid credentials.");
@@ -233,8 +230,8 @@ export default function LoginPage() {
       } else {
         throw new Error("Authentication failed.");
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || "Login failed.");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Login failed.");
     } finally {
       setIsLoading(false);
     }
