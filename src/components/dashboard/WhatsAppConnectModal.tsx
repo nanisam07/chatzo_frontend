@@ -138,7 +138,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   };
 
   const fallbackToManualOAuth = (appId: string) => {
-    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || window.location.origin;
+    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || "";
     const state = "test_code";
     
     const confirmMock = window.confirm(
