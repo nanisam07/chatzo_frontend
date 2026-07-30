@@ -2102,32 +2102,87 @@ export function OrdersTab({ category }: WidgetTabProps) {
 /* ───────────────────────────────────────────────────────── */
 /* ─── 8. PRODUCTS TAB ───────────────────────────────────── */
 /* ───────────────────────────────────────────────────────── */
+/* ───────────────────────────────────────────────────────── */
+/* ─── 8. PRODUCTS TAB ───────────────────────────────────── */
+/* ───────────────────────────────────────────────────────── */
 export function ProductsTab({ category, config }: WidgetTabProps) {
-  const { products, addItem, deleteItem } = useWorkspaceStore();
+  const { products, fetchProducts, addItem, updateItem, deleteItem } = useWorkspaceStore();
+  
   const [isOpen, setIsOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<any | null>(null);
+
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [secondary, setSecondary] = useState("");
   const [stock, setStock] = useState("");
 
+  useEffect(() => {
+    fetchProducts(category);
+  }, [category, fetchProducts]);
+
   const categoryProducts = products[category] || [];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !price) return;
-    addItem(category, {
-      name,
-      price: Number(price),
-      secondary: secondary || "General",
-      status: "Available",
-      stock: stock ? Number(stock) : undefined
-    });
+  const handleOpenAddModal = () => {
+    setEditingItem(null);
     setName("");
     setPrice("");
     setSecondary("");
     setStock("");
-    setIsOpen(false);
-    showToast("Catalog item added successfully!", "success");
+    setIsOpen(true);
+  };
+
+  const handleOpenEditModal = (item: any) => {
+    setEditingItem(item);
+    setName(item.name);
+    setPrice(String(item.price));
+    setSecondary(item.secondary || "");
+    setStock(item.stock !== undefined ? String(item.stock) : "");
+    setIsOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !price) return;
+
+    try {
+      if (editingItem) {
+        await updateItem(category, editingItem.id, {
+          name,
+          price: Number(price),
+          secondary: secondary || "General",
+          stock: stock ? Number(stock) : undefined,
+          status: stock && Number(stock) <= 0 ? "Out of Stock" : "Available",
+        });
+        showToast("Catalog item updated successfully!", "success");
+      } else {
+        await addItem(category, {
+          name,
+          price: Number(price),
+          secondary: secondary || "General",
+          status: stock && Number(stock) <= 0 ? "Out of Stock" : "Available",
+          stock: stock ? Number(stock) : undefined,
+        });
+        showToast("Catalog item added successfully!", "success");
+      }
+
+      setName("");
+      setPrice("");
+      setSecondary("");
+      setStock("");
+      setEditingItem(null);
+      setIsOpen(false);
+    } catch (err) {
+      // Toast notification is dispatched from workspace store error handling
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteItem(category, id);
+      showToast("Catalog item deleted successfully.", "success");
+    } catch (err) {
+      // Toast notification is dispatched from workspace store error handling
+    }
   };
 
   return (
@@ -2140,7 +2195,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
         <div className="flex justify-between items-center border-b border-slate-100 pb-4">
           <h3 className="text-base font-bold text-slate-900">Active catalog items</h3>
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={handleOpenAddModal}
             className="h-9 px-3.5 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Plus size={15} />
@@ -2180,9 +2235,18 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
               onChange={(e) => setStock(e.target.value)}
               className="h-9 bg-white border border-slate-200 rounded-xl px-3 text-xs focus:outline-none"
             />
-            <button type="submit" className="sm:col-span-4 h-9 bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-emerald-700">
-              Save Item
-            </button>
+            <div className="sm:col-span-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="h-9 px-4 border border-slate-200 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-700 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button type="submit" className="h-9 px-4 bg-emerald-600 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-emerald-700 transition-colors">
+                {editingItem ? "Update Item" : "Save Item"}
+              </button>
+            </div>
           </form>
         )}
 
@@ -2193,7 +2257,7 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
             description={`You haven't added any items to your ${config.catalogLabel} catalog yet.`}
             action={{
               label: "Add First Item",
-              onClick: () => setIsOpen(true)
+              onClick: handleOpenAddModal
             }}
             size="sm"
           />
@@ -2227,9 +2291,15 @@ export function ProductsTab({ category, config }: WidgetTabProps) {
                           {stockVal < 5 ? `Low (${stockVal})` : "In Stock"}
                         </span>
                       </td>
-                      <td className="py-3.5 px-5">
+                      <td className="py-3.5 px-5 flex items-center gap-2">
                         <button
-                          onClick={() => { deleteItem(category, p.id); showToast("Catalog item deleted successfully.", "success"); }}
+                          onClick={() => handleOpenEditModal(p)}
+                          className="px-2 py-1 text-slate-600 hover:text-emerald-600 font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
                           className="p-1 text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                         >
                           <Trash2 size={15} />
