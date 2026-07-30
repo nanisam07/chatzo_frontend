@@ -16,12 +16,11 @@ export default function DashboardLayout({
 }) {
   const params = useParams();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const { hydrateWorkspace, currentCategory, toast, showToast, hideToast } = useWorkspaceStore();
-
-  // Hydrate workspace state from backend APIs
-  useEffect(() => {
-    hydrateWorkspace();
-  }, [currentCategory, hydrateWorkspace]);
+  const {
+  toast,
+  showToast,
+  clearToast,
+} = useWorkspaceStore();
 
   // Extract category and tab parameters from route path
   const category = (params?.category as string) || "retail";
@@ -52,11 +51,11 @@ export default function DashboardLayout({
   useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
-        hideToast();
+        clearToast();
       }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [toast, hideToast]);
+  }, [toast, clearToast]);
 
   return (
     <div className="light subtle-grid text-[#111827] min-h-screen flex">
@@ -102,7 +101,7 @@ export default function DashboardLayout({
             <p className="text-[11px] text-gray-500 font-semibold mt-0.5 leading-snug">{toast.message}</p>
           </div>
           <button
-            onClick={hideToast}
+            onClick={clearToast}
             className="rounded-lg p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-650 transition-colors cursor-pointer"
           >
             <X size={14} />
