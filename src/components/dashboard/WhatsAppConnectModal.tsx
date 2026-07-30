@@ -51,22 +51,30 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   const { whatsappStatusDetails, connectWhatsApp, disconnectWhatsApp } = useWorkspaceStore();
 
   useEffect(() => {
-    // Load Facebook SDK
+    // Read NEXT_PUBLIC_META_APP_ID strictly without fallbacks
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+
+    // Load Facebook SDK only if appId exists
     const win = window as unknown as {
       FB?: {
         init: (config: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void;
         login: (
           callback: (response: { authResponse?: { code?: string } }) => void,
-          options: { config_id: string; response_type: string; override_default_response_type: boolean }
+          options: { config_id?: string; response_type: string; override_default_response_type: boolean }
         ) => void;
       };
       fbAsyncInit?: () => void;
     };
 
     if (typeof window !== "undefined" && !win.FB && isOpen) {
+      if (!appId) {
+        console.error("Meta SDK Error: NEXT_PUBLIC_META_APP_ID is missing. FB.init() was prevented.");
+        return;
+      }
+
       win.fbAsyncInit = function () {
         win.FB?.init({
-          appId: process.env.NEXT_PUBLIC_META_APP_ID || "123456789",
+          appId: appId,
           cookie: true,
           xfbml: true,
           version: "v20.0",
@@ -85,11 +93,21 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   if (!isOpen) return null;
 
   const handleConnectClick = () => {
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+
+    // Verify both required IDs exist before proceeding with FB login or OAuth
+    if (!appId || !configId) {
+      console.error("Meta SDK Error: NEXT_PUBLIC_META_APP_ID or NEXT_PUBLIC_META_CONFIG_ID is missing.");
+      alert("Configuration Error: Missing required Meta App ID or Configuration ID. Facebook SDK call aborted.");
+      return;
+    }
+
     const win = window as unknown as {
       FB?: {
         login: (
           callback: (response: { authResponse?: { code?: string } }) => void,
-          options: { config_id: string; response_type: string; override_default_response_type: boolean }
+          options: { config_id?: string; response_type: string; override_default_response_type: boolean }
         ) => void;
       };
     };
@@ -102,25 +120,24 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             if (code) {
               connectWhatsApp(code).catch(() => {});
             } else {
-              fallbackToManualOAuth();
+              fallbackToManualOAuth(appId);
             }
           } else {
-            fallbackToManualOAuth();
+            fallbackToManualOAuth(appId);
           }
         },
         {
-          config_id: process.env.NEXT_PUBLIC_META_CONFIG_ID || "123456789",
+          config_id: configId,
           response_type: "code",
           override_default_response_type: true,
         }
       );
     } else {
-      fallbackToManualOAuth();
+      fallbackToManualOAuth(appId);
     }
   };
 
-  const fallbackToManualOAuth = () => {
-    const appId = process.env.NEXT_PUBLIC_META_APP_ID || "123456789";
+  const fallbackToManualOAuth = (appId: string) => {
     const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || window.location.origin;
     const state = "test_code";
     
