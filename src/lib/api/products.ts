@@ -12,12 +12,14 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 const getHeaders = () => {
   const token = localStorage.getItem("accessToken");
 
-  return {
+  const headers = {
     "Content-Type": "application/json",
-    ...(token && {
-      Authorization: `Bearer ${token}`,
-    }),
+    Authorization: `Bearer ${token}`,
   };
+
+  console.log(headers);
+
+  return headers;
 };
 
 export const productsApi = {
