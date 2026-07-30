@@ -349,8 +349,9 @@ export const merchantApi = {
     if (!res.ok) throw new Error("Failed to fetch WhatsApp status");
     return res.json();
   },
-  async connectWhatsApp(code: string): Promise<unknown> {
-    const res = await api.get(`/whatsapp/connect?code=${encodeURIComponent(code)}`);
+  async connectWhatsApp(code: string, redirectUri?: string): Promise<unknown> {
+    const uriParam = redirectUri ? `&redirect_uri=${encodeURIComponent(redirectUri)}` : "";
+    const res = await api.get(`/whatsapp/connect?code=${encodeURIComponent(code)}${uriParam}`);
     if (!res.ok) throw new Error("Failed to connect WhatsApp account");
     return res.json();
   },

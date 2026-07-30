@@ -60,7 +60,16 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
         init: (config: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void;
         login: (
           callback: (response: { authResponse?: { code?: string } }) => void,
-          options: { config_id?: string; response_type: string; override_default_response_type: boolean }
+          options: {
+            config_id?: string;
+            response_type: string;
+            override_default_response_type: boolean;
+            extras?: {
+              setup: Record<string, unknown>;
+              featureType: string;
+              sessionInfoVersion: string;
+            };
+          }
         ) => void;
       };
       fbAsyncInit?: () => void;
@@ -107,7 +116,16 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
       FB?: {
         login: (
           callback: (response: { authResponse?: { code?: string } }) => void,
-          options: { config_id?: string; response_type: string; override_default_response_type: boolean }
+          options: {
+            config_id?: string;
+            response_type: string;
+            override_default_response_type: boolean;
+            extras?: {
+              setup: Record<string, unknown>;
+              featureType: string;
+              sessionInfoVersion: string;
+            };
+          }
         ) => void;
       };
     };
@@ -130,6 +148,11 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           config_id: configId,
           response_type: "code",
           override_default_response_type: true,
+          extras: {
+            setup: {},
+            featureType: "whatsapp_business_app_onboarding",
+            sessionInfoVersion: "3",
+          },
         }
       );
     } else {
@@ -138,7 +161,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   };
 
   const fallbackToManualOAuth = (appId: string) => {
-    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || "";
+    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || "https://chatzo-backend.onrender.com/api/v1/whatsapp/connect";
     const state = "test_code";
     
     const confirmMock = window.confirm(

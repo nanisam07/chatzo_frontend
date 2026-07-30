@@ -172,7 +172,7 @@ export interface WorkspaceStore {
 
   // WhatsApp Business Integration Actions
   fetchWhatsAppStatus: () => Promise<void>;
-  connectWhatsApp: (code: string) => Promise<void>;
+  connectWhatsApp: (code: string, redirectUri?: string) => Promise<void>;
   disconnectWhatsApp: () => Promise<void>;
   fetchChats: (category: string) => Promise<void>;
 
@@ -458,9 +458,9 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         }
       },
 
-      connectWhatsApp: async (code) => {
+      connectWhatsApp: async (code, redirectUri) => {
         try {
-          const res = (await merchantApi.connectWhatsApp(code)) as { success: boolean };
+          const res = (await merchantApi.connectWhatsApp(code, redirectUri)) as { success: boolean };
           if (res.success) {
             get().showToast("WhatsApp connected successfully", "success");
             await get().fetchWhatsAppStatus();
