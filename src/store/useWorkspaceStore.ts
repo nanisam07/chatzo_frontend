@@ -151,6 +151,17 @@ export interface WorkspaceStore {
   reviews: ReviewItem[];
   onboardingChecklists: Record<string, string[]>;
 
+  whatsappStatusDetails: {
+    connected: boolean;
+    wabaId?: string;
+    phoneNumberId?: string;
+    displayPhoneNumber?: string;
+    businessName?: string;
+    webhookStatus?: string;
+    cloudApiStatus?: string;
+    connectionStatus?: string;
+  } | null;
+
   // Actions
   setLoading: (loading: boolean) => void;
   setCurrentCategory: (category: string) => void;
@@ -159,10 +170,16 @@ export interface WorkspaceStore {
   updateProfile: (updates: Partial<WorkspaceProfile>) => Promise<void>;
   hydrateWorkspace: (category: string) => Promise<void>;
 
+  // WhatsApp Business Integration Actions
+  fetchWhatsAppStatus: () => Promise<void>;
+  connectWhatsApp: (code: string) => Promise<void>;
+  disconnectWhatsApp: () => Promise<void>;
+  fetchChats: (category: string) => Promise<void>;
+
   // Local-only Actions
   toggleOnboardingStep: (category: string, step: string) => void;
   togglePrinter: (id: string) => void;
-  addMessageToChat: (category: string, chatId: string, message: ChatMessage) => void;
+  addMessageToChat: (category: string, chatId: string, message: ChatMessage) => Promise<void>;
   addBranch: (branch: Omit<BranchItem, "id">) => void;
 
   // Products Backend Actions
@@ -274,6 +291,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       payouts: [],
       reviews: [],
       onboardingChecklists: {},
+      whatsappStatusDetails: null,
 
       // UI Actions
       setLoading: (loading) => set({ isLoading: loading }),
@@ -363,6 +381,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             get().fetchPrinters(),
             get().fetchTickets(),
             get().fetchDeliveryZones(),
+            get().fetchWhatsAppStatus(),
+            get().fetchChats(category),
           ]);
         } catch (error) {
           console.error("Workspace hydration failed:", error);
@@ -393,7 +413,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
           ),
         })),
 
-      addMessageToChat: (category, chatId, message) =>
+      addMessageToChat: async (category, chatId, message) => {
         set((state) => ({
           chats: {
             ...state.chats,
@@ -408,7 +428,67 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 : c
             ),
           },
-        })),
+        }));
+        try {
+          await merchantApi.sendChatMessage(chatId, message.text);
+        } catch (err) {
+          get().showToast("Failed to send message to backend", "error");
+          console.error(err);
+        }
+      },
+
+      fetchWhatsAppStatus: async () => {
+        try {
+          const res = await merchantApi.fetchWhatsAppStatus();
+          if (res.success) {
+            set({ whatsappStatusDetails: res });
+          }
+        } catch (err) {
+          console.error("fetchWhatsAppStatus failed", err);
+        }
+      },
+
+      connectWhatsApp: async (code) => {
+        try {
+          const res = await merchantApi.connectWhatsApp(code);
+          if (res.success) {
+            get().showToast("WhatsApp connected successfully", "success");
+            await get().fetchWhatsAppStatus();
+          }
+        } catch (err) {
+          get().showToast("Failed to connect WhatsApp", "error");
+          throw err;
+        }
+      },
+
+      disconnectWhatsApp: async () => {
+        try {
+          const res = await merchantApi.disconnectWhatsApp();
+          if (res.success) {
+            get().showToast("WhatsApp disconnected successfully", "success");
+            await get().fetchWhatsAppStatus();
+          }
+        } catch (err) {
+          get().showToast("Failed to disconnect WhatsApp", "error");
+          throw err;
+        }
+      },
+
+      fetchChats: async (category) => {
+        try {
+          const res = await merchantApi.fetchChats();
+          if (res.success && res.chats) {
+            set((state) => ({
+              chats: {
+                ...state.chats,
+                [category]: res.chats,
+              },
+            }));
+          }
+        } catch (err) {
+          console.error("fetchChats failed", err);
+        }
+      },
 
       addBranch: (branch) =>
         set((state) => ({

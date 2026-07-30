@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Smartphone,
@@ -19,6 +19,7 @@ import {
   Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 
 interface WhatsAppConnectModalProps {
   isOpen: boolean;
@@ -47,8 +48,94 @@ const FEATURES = [
 
 export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalProps) {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const { whatsappStatusDetails, connectWhatsApp, disconnectWhatsApp } = useWorkspaceStore();
+
+  useEffect(() => {
+    // Load Facebook SDK
+    const win = window as unknown as {
+      FB?: {
+        init: (config: { appId: string; cookie: boolean; xfbml: boolean; version: string }) => void;
+        login: (
+          callback: (response: { authResponse?: { code?: string } }) => void,
+          options: { config_id: string; response_type: string; override_default_response_type: boolean }
+        ) => void;
+      };
+      fbAsyncInit?: () => void;
+    };
+
+    if (typeof window !== "undefined" && !win.FB && isOpen) {
+      win.fbAsyncInit = function () {
+        win.FB?.init({
+          appId: process.env.NEXT_PUBLIC_META_APP_ID || "123456789",
+          cookie: true,
+          xfbml: true,
+          version: "v20.0",
+        });
+      };
+
+      const script = document.createElement("script");
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      script.defer = true;
+      script.crossOrigin = "anonymous";
+      document.body.appendChild(script);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleConnectClick = () => {
+    const win = window as unknown as {
+      FB?: {
+        login: (
+          callback: (response: { authResponse?: { code?: string } }) => void,
+          options: { config_id: string; response_type: string; override_default_response_type: boolean }
+        ) => void;
+      };
+    };
+
+    if (typeof window !== "undefined" && win.FB) {
+      win.FB.login(
+        function (response) {
+          if (response.authResponse) {
+            const code = response.authResponse.code;
+            if (code) {
+              connectWhatsApp(code).catch(() => {});
+            } else {
+              fallbackToManualOAuth();
+            }
+          } else {
+            fallbackToManualOAuth();
+          }
+        },
+        {
+          config_id: process.env.NEXT_PUBLIC_META_CONFIG_ID || "123456789",
+          response_type: "code",
+          override_default_response_type: true,
+        }
+      );
+    } else {
+      fallbackToManualOAuth();
+    }
+  };
+
+  const fallbackToManualOAuth = () => {
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID || "123456789";
+    const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || window.location.origin;
+    const state = "test_code";
+    
+    const confirmMock = window.confirm(
+      "Connect using Sandbox Demo Mode? (Select OK to connect a test number instantly, or Cancel to open Meta OAuth)"
+    );
+    if (confirmMock) {
+      connectWhatsApp("test_code").catch(() => {});
+    } else {
+      const oauthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
+        redirectUri
+      )}&scope=manage_whatsapp_businesses,whatsapp_business_messaging&response_type=code&state=${state}`;
+      window.open(oauthUrl, "meta_oauth", "width=600,height=600");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -86,123 +173,173 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
         {/* Content Body */}
         <div className="p-6 space-y-6 flex-1">
-          
-          {/* Awaiting Backend Integration Alert Box */}
-          <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-4 flex items-start gap-3.5 shadow-2xs">
-            <div className="h-9 w-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 text-white shadow-xs">
-              <AlertTriangle size={16} />
-            </div>
-            <div className="space-y-0.5">
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Awaiting Backend Integration</p>
-                <span className="px-2 py-0.5 rounded-md bg-amber-100/80 border border-amber-200 text-[9px] font-bold text-amber-900 uppercase">
-                  Pending Server Setup
-                </span>
+          {whatsappStatusDetails?.connected ? (
+            <div className="space-y-6">
+              {/* Connected Alert Box */}
+              <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="h-9 w-9 rounded-xl bg-emerald-600 flex items-center justify-center shrink-0 text-white shadow-xs">
+                  <ShieldCheck size={16} />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider">Connected</p>
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-200 text-[9px] font-bold text-emerald-800 uppercase">
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-xs text-emerald-800 font-semibold leading-relaxed">
+                    Your store is successfully connected to the official Meta WhatsApp Business Cloud API.
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-amber-800/90 font-medium leading-relaxed">
-                The Meta Business Suite integration requires the backend server and webhooks to be fully deployed. Once backend configuration goes live, this wizard will initiate Meta&apos;s OAuth flow.
-              </p>
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            
-            {/* Left Side: Onboarding Steps */}
-            <div className="lg:col-span-7 space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  Onboarding Steps
+              {/* Status Details */}
+              <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider border-b border-slate-200 pb-2">
+                  Cloud API Credentials & Status
                 </h3>
-                <span className="text-[10px] text-slate-400 font-semibold">Select step to view specs</span>
-              </div>
-              
-              <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
-                {FLOW_STEPS.map((step) => {
-                  const isSelected = selectedStep === step.id;
-                  return (
-                    <button
-                      key={step.id}
-                      onClick={() => setSelectedStep(isSelected ? null : step.id)}
-                      className={cn(
-                        "w-full flex items-start gap-3 p-2.5 rounded-xl border text-left transition-all duration-150 cursor-pointer group",
-                        isSelected
-                          ? "bg-slate-50 border-slate-300 shadow-2xs"
-                          : "bg-white border-slate-100 hover:bg-slate-50/60 hover:border-slate-200"
-                      )}
-                    >
-                      <div className="h-5 w-5 rounded-full bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 shrink-0 mt-0.5">
-                        {step.id}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-xs text-slate-800 group-hover:text-slate-900">
-                            {step.label}
-                          </span>
-                          <span className="text-slate-400 group-hover:text-slate-600 shrink-0">
-                            {step.icon}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                          {step.desc}
-                        </p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Side: Step Specs */}
-            <div className="lg:col-span-5 flex flex-col">
-              <div className="bg-slate-50/80 border border-slate-200/60 rounded-2xl p-4 flex-1 flex flex-col justify-between min-h-[200px]">
-                {selectedStep ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80">
-                      <div className="h-6 w-6 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-200/60">
-                        {selectedStep}
-                      </div>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        {FLOW_STEPS[selectedStep - 1].label} Specs
-                      </h4>
-                    </div>
-
-                    <div className="space-y-2 text-[11px] font-medium text-slate-600 leading-relaxed">
-                      <p className="font-bold text-slate-900">
-                        {FLOW_STEPS[selectedStep - 1].desc}
-                      </p>
-                      {selectedStep === 1 && (
-                        <div className="space-y-1 bg-white p-2.5 rounded-xl border border-slate-200/60">
-                          <span className="text-[9px] font-bold text-slate-400 uppercase block">Permissions Scope</span>
-                          <ul className="list-disc pl-4 space-y-0.5 text-slate-500 text-[10px]">
-                            <li>manage_whatsapp_businesses</li>
-                            <li>whatsapp_business_messaging</li>
-                          </ul>
-                        </div>
-                      )}
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold text-slate-600">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-slate-400 uppercase block font-bold">Business Name</span>
+                    <span className="text-slate-800 font-bold text-[13px]">{whatsappStatusDetails.businessName || "OFFSHIFT Shop"}</span>
                   </div>
-                ) : (
-                  <div className="space-y-2 my-auto text-center py-4">
-                    <Info size={18} className="mx-auto text-slate-400" />
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                        Technical Specs
-                      </h4>
-                      <p className="text-[11px] text-slate-400 font-medium mt-1 max-w-[180px] mx-auto leading-relaxed">
-                        Click on any step to inspect requirements.
-                      </p>
-                    </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-slate-400 uppercase block font-bold">Phone Number</span>
+                    <span className="text-slate-800 font-bold text-[13px]">{whatsappStatusDetails.displayPhoneNumber || "N/A"}</span>
                   </div>
-                )}
-
-                <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-[10px] text-slate-400 font-bold text-center uppercase tracking-wider flex items-center justify-center gap-1">
-                  <Lock size={10} className="text-amber-500" />
-                  Meta Sandbox Available
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-slate-400 uppercase block font-bold">WhatsApp Status</span>
+                    <span className="text-emerald-600 font-bold text-[13px]">Connected</span>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-slate-400 uppercase block font-bold">Webhook Status</span>
+                    <span className="text-emerald-600 font-bold text-[13px]">{whatsappStatusDetails.webhookStatus || "Verified"}</span>
+                  </div>
+                  <div className="space-y-1 col-span-1 md:col-span-2">
+                    <span className="text-[10px] text-slate-400 uppercase block font-bold">Cloud API Status</span>
+                    <span className="text-emerald-600 font-bold text-[13px]">{whatsappStatusDetails.cloudApiStatus || "Connected"}</span>
+                  </div>
                 </div>
               </div>
             </div>
+          ) : (
+            <>
+              {/* Onboarding steps details */}
+              <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-4 flex items-start gap-3.5 shadow-2xs">
+                <div className="h-9 w-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 text-white shadow-xs">
+                  <AlertTriangle size={16} />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Awaiting Backend Integration</p>
+                    <span className="px-2 py-0.5 rounded-md bg-amber-100/80 border border-amber-200 text-[9px] font-bold text-amber-900 uppercase">
+                      Pending Server Setup
+                    </span>
+                  </div>
+                  <p className="text-xs text-amber-800/90 font-medium leading-relaxed">
+                    The Meta Business Suite integration requires the backend server and webhooks to be fully deployed. Once backend configuration goes live, this wizard will initiate Meta&apos;s OAuth flow.
+                  </p>
+                </div>
+              </div>
 
-          </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                {/* Left Side: Onboarding Steps */}
+                <div className="lg:col-span-7 space-y-3">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      Onboarding Steps
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-semibold">Select step to view specs</span>
+                  </div>
+                  
+                  <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1 custom-scrollbar">
+                    {FLOW_STEPS.map((step) => {
+                      const isSelected = selectedStep === step.id;
+                      return (
+                        <button
+                          key={step.id}
+                          onClick={() => setSelectedStep(isSelected ? null : step.id)}
+                          className={cn(
+                            "w-full flex items-start gap-3 p-2.5 rounded-xl border text-left transition-all duration-150 cursor-pointer group",
+                            isSelected
+                              ? "bg-slate-50 border-slate-300 shadow-2xs"
+                              : "bg-white border-slate-100 hover:bg-slate-50/60 hover:border-slate-200"
+                          )}
+                        >
+                          <div className="h-5 w-5 rounded-full bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center text-[10px] font-black text-slate-600 shrink-0 mt-0.5">
+                            {step.id}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-bold text-xs text-slate-800 group-hover:text-slate-900">
+                                {step.label}
+                              </span>
+                              <span className="text-slate-400 group-hover:text-slate-600 shrink-0">
+                                {step.icon}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                              {step.desc}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right Side: Step Specs */}
+                <div className="lg:col-span-5 flex flex-col">
+                  <div className="bg-slate-50/80 border border-slate-200/60 rounded-2xl p-4 flex-1 flex flex-col justify-between min-h-[200px]">
+                    {selectedStep ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80">
+                          <div className="h-6 w-6 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs shrink-0 border border-emerald-200/60">
+                            {selectedStep}
+                          </div>
+                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            {FLOW_STEPS[selectedStep - 1].label} Specs
+                          </h4>
+                        </div>
+
+                        <div className="space-y-2 text-[11px] font-medium text-slate-600 leading-relaxed">
+                          <p className="font-bold text-slate-900">
+                            {FLOW_STEPS[selectedStep - 1].desc}
+                          </p>
+                          {selectedStep === 1 && (
+                            <div className="space-y-1 bg-white p-2.5 rounded-xl border border-slate-200/60">
+                              <span className="text-[9px] font-bold text-slate-400 uppercase block">Permissions Scope</span>
+                              <ul className="list-disc pl-4 space-y-0.5 text-slate-500 text-[10px]">
+                                <li>manage_whatsapp_businesses</li>
+                                <li>whatsapp_business_messaging</li>
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 my-auto text-center py-4">
+                        <Info size={18} className="mx-auto text-slate-400" />
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                            Technical Specs
+                          </h4>
+                          <p className="text-[11px] text-slate-400 font-medium mt-1 max-w-[180px] mx-auto leading-relaxed">
+                            Click on any step to inspect requirements.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/80 text-[10px] text-slate-400 font-bold text-center uppercase tracking-wider flex items-center justify-center gap-1">
+                      <Lock size={10} className="text-amber-500" />
+                      Meta Sandbox Available
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Commerce Features Unlock */}
           <div className="space-y-2 pt-1">
@@ -238,13 +375,21 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             Close
           </button>
 
-          <button
-            disabled
-            className="h-9 flex items-center gap-1.5 px-4 rounded-xl bg-slate-100 text-slate-400 border border-slate-200/60 font-bold text-xs cursor-not-allowed uppercase tracking-wider"
-          >
-            <Lock size={12} className="text-slate-400" />
-            Available After Backend Deployment
-          </button>
+          {whatsappStatusDetails?.connected ? (
+            <button
+              onClick={() => disconnectWhatsApp()}
+              className="h-9 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs cursor-pointer transition-colors"
+            >
+              Disconnect WhatsApp
+            </button>
+          ) : (
+            <button
+              onClick={handleConnectClick}
+              className="h-9 flex items-center gap-1.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer transition-colors"
+            >
+              Connect WhatsApp Business
+            </button>
+          )}
         </div>
       </div>
     </div>

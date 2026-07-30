@@ -342,4 +342,31 @@ export const merchantApi = {
     const json = await res.json();
     return json.data || json;
   },
+
+  // WhatsApp Business Integration
+  async fetchWhatsAppStatus(): Promise<unknown> {
+    const res = await api.get(`/whatsapp/status`);
+    if (!res.ok) throw new Error("Failed to fetch WhatsApp status");
+    return res.json();
+  },
+  async connectWhatsApp(code: string): Promise<unknown> {
+    const res = await api.get(`/whatsapp/connect?code=${encodeURIComponent(code)}`);
+    if (!res.ok) throw new Error("Failed to connect WhatsApp account");
+    return res.json();
+  },
+  async disconnectWhatsApp(): Promise<unknown> {
+    const res = await api.post(`/whatsapp/disconnect`, {});
+    if (!res.ok) throw new Error("Failed to disconnect WhatsApp account");
+    return res.json();
+  },
+  async fetchChats(): Promise<unknown> {
+    const res = await api.get(`/whatsapp/chats`);
+    if (!res.ok) throw new Error("Failed to fetch chats");
+    return res.json();
+  },
+  async sendChatMessage(threadId: string, text: string): Promise<unknown> {
+    const res = await api.post(`/whatsapp/send`, { threadId, text });
+    if (!res.ok) throw new Error("Failed to send WhatsApp message");
+    return res.json();
+  },
 };
