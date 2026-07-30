@@ -364,15 +364,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     })),
 
   hydrateWorkspace: async () => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
-
     set({ isLoading: true });
     try {
-      const meRes = await api.get("/api/v1/auth/me", { headers });
+      const meRes = await api.get("/api/v1/auth/me");
       if (meRes.ok) {
         const meData = await meRes.json();
         if (meData.success && meData.data?.user) {
@@ -421,7 +415,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       const category = state.currentCategory || "retail";
 
       // Fetch products
-      const prodRes = await api.get(`/api/v1/merchant/products?category=${category}`, { headers });
+      const prodRes = await api.get(`/api/v1/merchant/products?category=${category}`);
       if (prodRes.ok) {
         const prodData = await prodRes.json();
         if (prodData.success && Array.isArray(prodData.data)) {
@@ -440,7 +434,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch categories
-      const catRes = await api.get("/api/v1/merchant/categories", { headers });
+      const catRes = await api.get("/api/v1/merchant/categories");
       if (catRes.ok) {
         const catData = await catRes.json();
         if (catData.success && Array.isArray(catData.data)) {
@@ -455,7 +449,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch orders
-      const orderRes = await api.get(`/api/v1/merchant/orders?category=${category}`, { headers });
+      const orderRes = await api.get(`/api/v1/merchant/orders?category=${category}`);
       if (orderRes.ok) {
         const orderData = await orderRes.json();
         if (orderData.success && Array.isArray(orderData.data)) {
@@ -474,7 +468,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch customers
-      const custRes = await api.get("/api/v1/merchant/customers", { headers });
+      const custRes = await api.get("/api/v1/merchant/customers");
       if (custRes.ok) {
         const custData = await custRes.json();
         if (custData.success && Array.isArray(custData.data)) {
@@ -494,7 +488,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch coupons
-      const coupRes = await api.get("/api/v1/merchant/coupons", { headers });
+      const coupRes = await api.get("/api/v1/merchant/coupons");
       if (coupRes.ok) {
         const coupData = await coupRes.json();
         if (coupData.success && Array.isArray(coupData.data)) {
@@ -511,7 +505,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch staff
-      const staffRes = await api.get("/api/v1/merchant/staff", { headers });
+      const staffRes = await api.get("/api/v1/merchant/staff");
       if (staffRes.ok) {
         const staffData = await staffRes.json();
         if (staffData.success && Array.isArray(staffData.data)) {
@@ -528,7 +522,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch printers
-      const printRes = await api.get("/api/v1/merchant/printers", { headers });
+      const printRes = await api.get("/api/v1/merchant/printers");
       if (printRes.ok) {
         const printData = await printRes.json();
         if (printData.success && Array.isArray(printData.data)) {
@@ -546,7 +540,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch tickets
-      const ticketRes = await api.get("/api/v1/merchant/tickets", { headers });
+      const ticketRes = await api.get("/api/v1/merchant/tickets");
       if (ticketRes.ok) {
         const ticketData = await ticketRes.json();
         if (ticketData.success && Array.isArray(ticketData.data)) {
@@ -564,7 +558,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
       }
 
       // Fetch delivery zones
-      const zoneRes = await api.get("/api/v1/merchant/delivery-zones", { headers });
+      const zoneRes = await api.get("/api/v1/merchant/delivery-zones");
       if (zoneRes.ok) {
         const zoneData = await zoneRes.json();
         if (zoneData.success && Array.isArray(zoneData.data)) {
@@ -586,11 +580,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   },
 
   addItem: async (category, item) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/products", {
           name: item.name,
@@ -599,7 +588,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
           status: item.status || "Available",
           stock: Number(item.stock || 0),
           category: category,
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -610,13 +599,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   },
 
   deleteItem: async (category, id) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
-      const res = await api.delete(`/api/v1/merchant/products/${id}`, { headers });
+      const res = await api.delete(`/api/v1/merchant/products/${id}`);
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -627,13 +611,8 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   },
 
   updateOrderStatus: async (category, id, status) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
-      const res = await api.patch(`/api/v1/merchant/orders/${id}/status`, { status }, { headers });
+      const res = await api.patch(`/api/v1/merchant/orders/${id}/status`, { status });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -732,11 +711,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     })),
 
   addStaff: async (member) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/staff", {
           name: member.name,
@@ -744,7 +718,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
           email: member.email || undefined,
           phone: member.phone || undefined,
           status: member.status || "Active",
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -755,18 +729,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   },
 
   addCoupon: async (coupon) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/coupons", {
           code: coupon.code,
           discount: coupon.discount,
           expiry: coupon.expiry,
           status: "Active",
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -777,11 +746,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
   },
 
   addPrinter: async (printer) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/printers", {
           name: printer.name,
@@ -789,7 +753,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
           ipAddress: printer.ipAddress,
           paperWidth: printer.paperWidth,
           status: "Online",
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -805,18 +769,13 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     })),
 
   addTicket: async (ticket) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/tickets", {
           issue: ticket.subject,
           category: ticket.category || "Other",
           priority: ticket.priority || "Medium",
           status: "Pending",
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();
@@ -832,17 +791,12 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     })),
 
   addDeliveryZone: async (zone) => {
-    const token = localStorage.getItem("accessToken");
-    const headers = {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
     try {
       const res = await api.post("/api/v1/merchant/delivery-zones", {
           name: zone.name,
           charges: Number(zone.charges),
           minAmount: Number(zone.minAmount),
-        }, { headers });
+        });
       if (res.ok) {
         const store = useWorkspaceStore.getState();
         await store.hydrateWorkspace();

@@ -224,8 +224,12 @@ export default function LoginPage() {
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Invalid credentials.");
       }
-      if (data.data?.accessToken) {
-        localStorage.setItem("accessToken", data.data.accessToken);
+      const tokenData = data.data || data;
+      if (tokenData?.accessToken) {
+        localStorage.setItem("accessToken", tokenData.accessToken);
+        if (tokenData?.refreshToken) {
+          localStorage.setItem("refreshToken", tokenData.refreshToken);
+        }
         window.location.href = "/dashboard";
       } else {
         throw new Error("Authentication failed.");
