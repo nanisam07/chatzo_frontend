@@ -129,8 +129,15 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   if (!isOpen) return null;
 
   const handleConnectClick = () => {
-    const appId = process.env.NEXT_PUBLIC_META_APP_ID;
-    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+  const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+  const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
+  const redirectUri = window.location.origin + window.location.pathname;
+
+  console.log("========== META FRONTEND DEBUG ==========");
+  console.log("APP_ID:", appId);
+  console.log("CONFIG_ID:", configId);
+  console.log("REDIRECT_URI:", redirectUri);
+  console.log("========================================");
 
     // Verify both required IDs exist before proceeding with FB login or OAuth
     if (!appId || !configId) {
@@ -159,9 +166,10 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
     };
 
     // Calculate redirectUri pointing back to the current frontend page
-    const redirectUri = window.location.origin + window.location.pathname;
+    
 
     if (typeof window !== "undefined" && win.FB) {
+
       win.FB.login(
         function (response) {
           if (response.authResponse) {
