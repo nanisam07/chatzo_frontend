@@ -77,11 +77,13 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
     if (typeof window !== "undefined" && !win.FB && isOpen) {
       if (!appId) {
-        console.error("Meta SDK Error: NEXT_PUBLIC_META_APP_ID is missing. FB.init() was prevented.");
+        console.error("[Meta SDK] NEXT_PUBLIC_META_APP_ID is missing. FB.init() was prevented.");
         return;
       }
 
+      console.log("[Meta SDK] Loading Facebook SDK script...");
       win.fbAsyncInit = function () {
+        console.log("[Meta SDK] Initializing Facebook SDK v23.0");
         win.FB?.init({
           appId: appId,
           cookie: true,
@@ -105,9 +107,8 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
     const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
 
-    // Verify both required IDs exist before proceeding with FB login
     if (!appId || !configId) {
-      console.error("Meta SDK Error: NEXT_PUBLIC_META_APP_ID or NEXT_PUBLIC_META_CONFIG_ID is missing.");
+      console.error("[Meta SDK] NEXT_PUBLIC_META_APP_ID or NEXT_PUBLIC_META_CONFIG_ID is missing.");
       alert("Configuration Error: Missing required Meta App ID or Configuration ID. Facebook SDK call aborted.");
       return;
     }
@@ -131,17 +132,21 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
     };
 
     if (typeof window !== "undefined" && win.FB) {
+      console.log("[OAuth] Launching FB.login() for WhatsApp Business onboarding");
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
             if (code) {
-              connectWhatsApp(code).catch(() => {});
+              console.log("[OAuth] FB.login() succeeded. Authorization code received.");
+              connectWhatsApp(code).catch((err) => {
+                console.error("[OAuth] Connection failed inside dashboard store:", err);
+              });
             } else {
-              console.error("[WhatsApp] Authorization code missing in FB.login response.");
+              console.error("[OAuth] Authorization code missing in FB.login response.");
             }
           } else {
-            console.error("[WhatsApp] User cancelled FB.login or did not fully authorize.");
+            console.warn("[OAuth] User cancelled login or did not fully authorize.");
           }
         },
         {
@@ -156,11 +161,12 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
         }
       );
     } else {
-      // In development/test environments, allow a fallback mock connection for testing
+      console.warn("[Meta SDK] Facebook SDK not loaded. Triggering Sandbox option.");
       const confirmMock = window.confirm(
         "Facebook SDK failed to load (possibly due to an ad-blocker). Do you want to connect using Sandbox Demo Mode?"
       );
       if (confirmMock) {
+        console.log("[OAuth] Sandbox Demo Mode selected.");
         connectWhatsApp("test_code").catch(() => {});
       }
     }
