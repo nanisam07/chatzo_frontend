@@ -29,10 +29,22 @@ export default function DashboardLayout({
   useEffect(() => {
     const code = searchParams?.get("code");
     if (code) {
-      const defaultRedirect = process.env.NEXT_PUBLIC_API_URL 
-        ? `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/connect` 
-        : "https://chatzo-backend-1yin.onrender.com/api/v1/whatsapp/connect";
-      const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || defaultRedirect;
+      // Check if this window was opened as a popup (via window.open)
+      if (typeof window !== "undefined" && window.opener) {
+        try {
+          window.opener.postMessage(
+            { type: "META_OAUTH_CODE", code },
+            window.location.origin
+          );
+          window.close();
+          return;
+        } catch (err) {
+          console.error("Failed to post message to parent window:", err);
+        }
+      }
+
+      // If loaded in the main window directly (fallback full-page redirect flow)
+      const redirectUri = window.location.origin + window.location.pathname;
       connectWhatsApp(code, redirectUri)
         .then(() => {
           // Clean parameters from address bar
