@@ -99,47 +99,13 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
     }
   }, [isOpen]);
 
-  useEffect(() => {
-    const handleOAuthMessage = (event: MessageEvent) => {
-      // Security: Only accept messages from our own origin
-      if (event.origin !== window.location.origin) return;
-
-      if (event.data?.type === "META_OAUTH_CODE" && event.data?.code) {
-        const code = event.data.code;
-        const redirectUri = window.location.origin + window.location.pathname;
-        console.log("[WhatsApp] Received OAuth code from popup:", code);
-        connectWhatsApp(code, redirectUri)
-          .then(() => {
-            console.log("[WhatsApp] Connected successfully via popup redirect");
-          })
-          .catch((err) => {
-            console.error("[WhatsApp] Connection failed:", err);
-          });
-      }
-    };
-
-    if (isOpen) {
-      window.addEventListener("message", handleOAuthMessage);
-    }
-    return () => {
-      window.removeEventListener("message", handleOAuthMessage);
-    };
-  }, [isOpen, connectWhatsApp]);
-
   if (!isOpen) return null;
 
   const handleConnectClick = () => {
-  const appId = process.env.NEXT_PUBLIC_META_APP_ID;
-  const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
-  const redirectUri = window.location.origin + window.location.pathname;
+    const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+    const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
 
-  console.log("========== META FRONTEND DEBUG ==========");
-  console.log("APP_ID:", appId);
-  console.log("CONFIG_ID:", configId);
-  console.log("REDIRECT_URI:", redirectUri);
-  console.log("========================================");
-
-    // Verify both required IDs exist before proceeding with FB login or OAuth
+    // Verify both required IDs exist before proceeding with FB login
     if (!appId || !configId) {
       console.error("Meta SDK Error: NEXT_PUBLIC_META_APP_ID or NEXT_PUBLIC_META_CONFIG_ID is missing.");
       alert("Configuration Error: Missing required Meta App ID or Configuration ID. Facebook SDK call aborted.");
@@ -154,7 +120,6 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             config_id?: string;
             response_type: string;
             override_default_response_type: boolean;
-            redirect_uri?: string;
             extras?: {
               setup: Record<string, unknown>;
               featureType: string;
@@ -165,29 +130,24 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
       };
     };
 
-    // Calculate redirectUri pointing back to the current frontend page
-    
-
     if (typeof window !== "undefined" && win.FB) {
-
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
             if (code) {
-              connectWhatsApp(code, redirectUri).catch(() => {});
+              connectWhatsApp(code).catch(() => {});
             } else {
-              fallbackToManualOAuth(appId, configId, redirectUri);
+              console.error("[WhatsApp] Authorization code missing in FB.login response.");
             }
           } else {
-            fallbackToManualOAuth(appId, configId, redirectUri);
+            console.error("[WhatsApp] User cancelled FB.login or did not fully authorize.");
           }
         },
         {
           config_id: configId,
           response_type: "code",
           override_default_response_type: true,
-          redirect_uri: redirectUri,
           extras: {
             setup: {},
             featureType: "whatsapp_business_app_onboarding",
@@ -196,30 +156,13 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
         }
       );
     } else {
-      fallbackToManualOAuth(appId, configId, redirectUri);
-    }
-  };
-
-  const fallbackToManualOAuth = (appId: string, configId: string, redirectUri: string) => {
-    const confirmMock = window.confirm(
-      "Connect using Sandbox Demo Mode? (Select OK to connect a test number instantly, or Cancel to open Meta OAuth)"
-    );
-    if (confirmMock) {
-      connectWhatsApp("test_code", redirectUri).catch(() => {});
-    } else {
-      const state = "whatsapp_onboarding";
-      const extras = {
-        setup: {},
-        featureType: "whatsapp_business_app_onboarding",
-        sessionInfoVersion: "3",
-      };
-
-      const oauthUrl = `https://www.facebook.com/v20.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(
-        redirectUri
-      )}&config_id=${configId}&response_type=code&state=${state}&extras=${encodeURIComponent(
-        JSON.stringify(extras)
-      )}`;
-      window.open(oauthUrl, "meta_oauth", "width=600,height=600");
+      // In development/test environments, allow a fallback mock connection for testing
+      const confirmMock = window.confirm(
+        "Facebook SDK failed to load (possibly due to an ad-blocker). Do you want to connect using Sandbox Demo Mode?"
+      );
+      if (confirmMock) {
+        connectWhatsApp("test_code").catch(() => {});
+      }
     }
   };
 
