@@ -86,7 +86,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           appId: appId,
           cookie: true,
           xfbml: true,
-          version: "v20.0",
+          version: "v23.0",
         });
       };
 
