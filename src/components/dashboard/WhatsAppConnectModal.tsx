@@ -83,12 +83,12 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
       console.log("[Meta SDK] Loading Facebook SDK script...");
       win.fbAsyncInit = function () {
-        console.log("[Meta SDK] Initializing Facebook SDK v23.0");
+        console.log("[Meta SDK] Initializing Facebook SDK v26.0");
         win.FB?.init({
           appId: appId,
           cookie: true,
           xfbml: false,
-          version: "v23.0",
+          version: "v26.0",
         });
       };
 
@@ -123,8 +123,9 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             override_default_response_type: boolean;
             extras?: {
               setup: Record<string, unknown>;
-              featureType: string;
-              sessionInfoVersion: string;
+              version?: string;
+              featureType?: string;
+              sessionInfoVersion?: string;
             };
           }
         ) => void;
@@ -155,8 +156,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           override_default_response_type: true,
           extras: {
             setup: {},
-            featureType: "whatsapp_business_app_onboarding",
-            sessionInfoVersion: "3",
+            version: "v4",
           },
         }
       );
