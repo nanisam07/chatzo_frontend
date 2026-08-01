@@ -460,13 +460,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
 
       connectWhatsApp: async (code, redirectUri) => {
         try {
-          const res = (await merchantApi.connectWhatsApp(code, redirectUri)) as { success: boolean };
+          const res = (await merchantApi.connectWhatsApp(code)) as { success: boolean };
           if (res.success) {
             get().showToast("WhatsApp connected successfully", "success");
             await get().fetchWhatsAppStatus();
           }
-        } catch (err) {
-          get().showToast("Failed to connect WhatsApp", "error");
+        } catch (err: any) {
+          get().showToast(err.message || "Failed to connect WhatsApp", "error");
           throw err;
         }
       },

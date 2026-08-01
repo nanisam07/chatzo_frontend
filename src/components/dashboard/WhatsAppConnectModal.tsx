@@ -87,7 +87,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
         win.FB?.init({
           appId: appId,
           cookie: true,
-          xfbml: true,
+          xfbml: false,
           version: "v23.0",
         });
       };
@@ -132,21 +132,21 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
     };
 
     if (typeof window !== "undefined" && win.FB) {
-      console.log("[OAuth] Launching FB.login() for WhatsApp Business onboarding");
+      console.log("[Meta SDK] Launching FB.login() for WhatsApp Business onboarding");
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
             if (code) {
-              console.log("[OAuth] FB.login() succeeded. Authorization code received.");
+              console.log("[Embedded Signup] FB.login() succeeded. Authorization code received.");
               connectWhatsApp(code).catch((err) => {
-                console.error("[OAuth] Connection failed inside dashboard store:", err);
+                console.error("[Embedded Signup] Connection failed inside dashboard store:", err);
               });
             } else {
-              console.error("[OAuth] Authorization code missing in FB.login response.");
+              console.error("[Embedded Signup] Authorization code missing in FB.login response.");
             }
           } else {
-            console.warn("[OAuth] User cancelled login or did not fully authorize.");
+            console.warn("[Embedded Signup] User cancelled login or did not fully authorize.");
           }
         },
         {
@@ -166,7 +166,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
         "Facebook SDK failed to load (possibly due to an ad-blocker). Do you want to connect using Sandbox Demo Mode?"
       );
       if (confirmMock) {
-        console.log("[OAuth] Sandbox Demo Mode selected.");
+        console.log("[Embedded Signup] Sandbox Demo Mode selected.");
         connectWhatsApp("test_code").catch(() => {});
       }
     }
