@@ -158,7 +158,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           override_default_response_type: true,
           extras: {
             setup: {},
-            version: "v4",
+            
           },
         }
       );
