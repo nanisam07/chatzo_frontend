@@ -134,10 +134,12 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
     if (typeof window !== "undefined" && win.FB) {
       console.log("[Meta SDK] Launching FB.login() for WhatsApp Business onboarding");
+      console.log("Config ID:", configId);
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
+            console.log("Authorization Code:", code?.substring(0, 20));
             if (code) {
               console.log("[Embedded Signup] FB.login() succeeded. Authorization code received.");
               connectWhatsApp(code).catch((err) => {
