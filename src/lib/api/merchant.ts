@@ -349,9 +349,9 @@ export const merchantApi = {
     if (!res.ok) throw new Error("Failed to fetch WhatsApp status");
     return res.json();
   },
-  async connectWhatsApp(code: string): Promise<unknown> {
-    console.log("[Embedded Signup] Sending authorization code to backend...");
-    const res = await api.post(`/whatsapp/connect`, { code });
+  async connectWhatsApp(code: string, wabaId?: string, phoneNumberId?: string): Promise<unknown> {
+    console.log("[Embedded Signup] Sending authorization code and session metadata to backend...");
+    const res = await api.post(`/whatsapp/connect`, { code, wabaId, phoneNumberId });
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.message || "Failed to connect WhatsApp account");

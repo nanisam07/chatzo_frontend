@@ -49,10 +49,47 @@ const FEATURES = [
 export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalProps) {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const { whatsappStatusDetails, connectWhatsApp, disconnectWhatsApp } = useWorkspaceStore();
+  const sessionInfoRef = React.useRef<{ wabaId?: string; phoneNumberId?: string }>({});
 
   useEffect(() => {
     // Read NEXT_PUBLIC_META_APP_ID strictly without fallbacks
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
+
+    // Listen for Meta Embedded Signup postMessage events from Facebook origins
+    const handleMetaMessage = (event: MessageEvent) => {
+      if (
+        event.origin !== "https://www.facebook.com" &&
+        event.origin !== "https://web.facebook.com"
+      ) {
+        return;
+      }
+
+      try {
+        const rawData = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (!rawData) return;
+
+        // Meta Embedded Signup message format
+        if (rawData.type === "WA_EMBEDDED_SIGNUP" || rawData.event === "FINISH") {
+          console.log("[Meta Embedded Signup] Received session message event:", rawData.event || rawData.type);
+          const dataPayload = rawData.data || rawData;
+          if (dataPayload) {
+            const wabaId = dataPayload.waba_id || dataPayload.wabaId;
+            const phoneNumberId = dataPayload.phone_number_id || dataPayload.phoneNumberId;
+
+            if (wabaId || phoneNumberId) {
+              console.log("[Meta Embedded Signup] Captured IDs from session event - WABA ID:", wabaId, "Phone Number ID:", phoneNumberId);
+              sessionInfoRef.current = { wabaId, phoneNumberId };
+            }
+          }
+        }
+      } catch (err) {
+        // Non-JSON message from other origins/extensions
+      }
+    };
+
+    if (typeof window !== "undefined" && isOpen) {
+      window.addEventListener("message", handleMetaMessage);
+    }
 
     // Load Facebook SDK only if appId exists
     const win = window as unknown as {
@@ -66,8 +103,8 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             override_default_response_type: boolean;
             extras?: {
               setup: Record<string, unknown>;
-              featureType: string;
-              sessionInfoVersion: string;
+              featureType?: string;
+              sessionInfoVersion?: string;
             };
           }
         ) => void;
@@ -99,6 +136,12 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
       script.crossOrigin = "anonymous";
       document.body.appendChild(script);
     }
+
+    return () => {
+      if (typeof window !== "undefined") {
+        window.removeEventListener("message", handleMetaMessage);
+      }
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -123,7 +166,6 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             override_default_response_type: boolean;
             extras?: {
               setup: Record<string, unknown>;
-              version?: string;
               featureType?: string;
               sessionInfoVersion?: string;
             };
@@ -134,19 +176,19 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
     if (typeof window !== "undefined" && win.FB) {
       console.log("[Meta SDK] Launching FB.login() for WhatsApp Business onboarding");
-      console.log("Config ID:", configId);
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
-            console.log("Authorization Code:", code?.substring(0, 20));
             if (code) {
               console.log("[Embedded Signup] FB.login() succeeded. Authorization code received.");
-              connectWhatsApp(code).catch((err) => {
+              const { wabaId, phoneNumberId } = sessionInfoRef.current;
+              connectWhatsApp(code, wabaId, phoneNumberId).catch((err) => {
                 console.error("[Embedded Signup] Connection failed inside dashboard store:", err);
               });
             } else {
               console.error("[Embedded Signup] Authorization code missing in FB.login response.");
+              alert("Authentication Error: Authorization code not returned by Meta.");
             }
           } else {
             console.warn("[Embedded Signup] User cancelled login or did not fully authorize.");
@@ -158,18 +200,22 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           override_default_response_type: true,
           extras: {
             setup: {},
-            
+            sessionInfoVersion: "2",
           },
         }
       );
     } else {
-      console.warn("[Meta SDK] Facebook SDK not loaded. Triggering Sandbox option.");
-      const confirmMock = window.confirm(
-        "Facebook SDK failed to load (possibly due to an ad-blocker). Do you want to connect using Sandbox Demo Mode?"
-      );
-      if (confirmMock) {
-        console.log("[Embedded Signup] Sandbox Demo Mode selected.");
-        connectWhatsApp("test_code").catch(() => {});
+      console.warn("[Meta SDK] Facebook SDK not loaded.");
+      if (process.env.NODE_ENV === "development") {
+        const confirmMock = window.confirm(
+          "Facebook SDK failed to load. Do you want to launch Development Sandbox Demo Mode?"
+        );
+        if (confirmMock) {
+          console.log("[Embedded Signup] Sandbox Demo Mode selected.");
+          connectWhatsApp("test_code").catch(() => {});
+        }
+      } else {
+        alert("Meta SDK Failed to load. Please disable any ad-blockers and try again.");
       }
     }
   };
