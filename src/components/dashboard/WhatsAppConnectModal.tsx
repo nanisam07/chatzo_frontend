@@ -48,6 +48,7 @@ const FEATURES = [
 
 export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalProps) {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const { whatsappStatusDetails, connectWhatsApp, disconnectWhatsApp } = useWorkspaceStore();
   const sessionInfoRef = React.useRef<{ wabaId?: string; phoneNumberId?: string }>({});
 
@@ -147,6 +148,11 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
   if (!isOpen) return null;
 
   const handleConnectClick = () => {
+    if (isConnecting) {
+      console.warn("[Embedded Signup] Connection attempt already in progress.");
+      return;
+    }
+
     const appId = process.env.NEXT_PUBLIC_META_APP_ID;
     const configId = process.env.NEXT_PUBLIC_META_CONFIG_ID;
 
@@ -176,21 +182,29 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
 
     if (typeof window !== "undefined" && win.FB) {
       console.log("[Meta SDK] Launching FB.login() for WhatsApp Business onboarding");
+      setIsConnecting(true);
       win.FB.login(
         function (response) {
           if (response.authResponse) {
             const code = response.authResponse.code;
             if (code) {
-              console.log("[Embedded Signup] FB.login() succeeded. Authorization code received.");
+              const connectionRequestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+              console.log("[Embedded Signup] FB.login() succeeded. Authorization code received. connectionRequestId:", connectionRequestId);
               const { wabaId, phoneNumberId } = sessionInfoRef.current;
-              connectWhatsApp(code, wabaId, phoneNumberId).catch((err) => {
-                console.error("[Embedded Signup] Connection failed inside dashboard store:", err);
-              });
+              connectWhatsApp(code, wabaId, phoneNumberId, connectionRequestId)
+                .catch((err) => {
+                  console.error("[Embedded Signup] Connection failed inside dashboard store:", err);
+                })
+                .finally(() => {
+                  setIsConnecting(false);
+                });
             } else {
+              setIsConnecting(false);
               console.error("[Embedded Signup] Authorization code missing in FB.login response.");
               alert("Authentication Error: Authorization code not returned by Meta.");
             }
           } else {
+            setIsConnecting(false);
             console.warn("[Embedded Signup] User cancelled login or did not fully authorize.");
           }
         },
@@ -468,9 +482,13 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           ) : (
             <button
               onClick={handleConnectClick}
-              className="h-9 flex items-center gap-1.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs cursor-pointer transition-colors"
+              disabled={isConnecting}
+              className={cn(
+                "h-9 flex items-center gap-1.5 px-4 rounded-xl text-white font-bold text-xs transition-colors cursor-pointer",
+                isConnecting ? "bg-emerald-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700"
+              )}
             >
-              Connect WhatsApp Business
+              {isConnecting ? "Connecting..." : "Connect WhatsApp Business"}
             </button>
           )}
         </div>
