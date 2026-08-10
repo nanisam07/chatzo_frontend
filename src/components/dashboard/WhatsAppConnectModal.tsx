@@ -172,6 +172,7 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             override_default_response_type: boolean;
             extras?: {
               setup: Record<string, unknown>;
+              feature?: string;
               featureType?: string;
               sessionInfoVersion?: string;
             };
@@ -191,7 +192,8 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
               const connectionRequestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
               console.log("[Embedded Signup] FB.login() succeeded. Authorization code received. connectionRequestId:", connectionRequestId);
               const { wabaId, phoneNumberId } = sessionInfoRef.current;
-              connectWhatsApp(code, wabaId, phoneNumberId, connectionRequestId)
+              const redirectUri = `${window.location.origin}/`;
+              connectWhatsApp(code, wabaId, phoneNumberId, connectionRequestId, redirectUri)
                 .catch((err) => {
                   console.error("[Embedded Signup] Connection failed inside dashboard store:", err);
                 })
@@ -213,8 +215,10 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
           response_type: "code",
           override_default_response_type: true,
           extras: {
+            feature: "whatsapp_embedded_signup",
+            sessionInfoVersion: "3",
+            featureType: "whatsapp_business_app_onboarding",
             setup: {},
-            sessionInfoVersion: "2",
           },
         }
       );

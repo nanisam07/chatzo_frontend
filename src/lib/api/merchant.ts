@@ -349,10 +349,10 @@ export const merchantApi = {
     if (!res.ok) throw new Error("Failed to fetch WhatsApp status");
     return res.json();
   },
-  async connectWhatsApp(code: string, wabaId?: string, phoneNumberId?: string, connectionRequestId?: string): Promise<unknown> {
+  async connectWhatsApp(code: string, wabaId?: string, phoneNumberId?: string, connectionRequestId?: string, redirectUri?: string): Promise<unknown> {
     const reqId = connectionRequestId || `conn_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     console.log(`[Embedded Signup] Sending authorization code to backend with connectionRequestId: ${reqId}`);
-    const res = await api.post(`/whatsapp/connect`, { code, wabaId, phoneNumberId, connectionRequestId: reqId });
+    const res = await api.post(`/whatsapp/connect`, { code, wabaId, phoneNumberId, connectionRequestId: reqId, redirectUri });
     const data = await res.json();
     if (!res.ok) {
       throw new Error(data.message || "Failed to connect WhatsApp account");
