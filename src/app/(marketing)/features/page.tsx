@@ -59,7 +59,7 @@ export default function FeaturesPage() {
             </span>
           </Typography>
           <Typography variant="body" className="text-muted-foreground text-lg md:text-[20px] lg:text-[22px] max-w-2xl mx-auto leading-relaxed">
-            From conversational checkout links to AI recovery, explore how Chatzo optimizes transaction performance.
+            From conversational checkout links to AI recovery, explore how Offshift optimizes transaction performance.
           </Typography>
         </div>
       </Section>

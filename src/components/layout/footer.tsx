@@ -124,10 +124,10 @@ export function Footer() {
 
         {/* Footer Bottom (Credits) */}
         <div className="pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] text-muted-foreground">
-          <span>&copy; {new Date().getFullYear()} CHATZO Technologies Inc. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} OFFSHIFT Technologies Inc. All rights reserved.</span>
           <div className="flex gap-6">
-            <Link href="#" className="hover:text-foreground transition-colors">Terms of Service</Link>
-            <Link href="#" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
           </div>
         </div>
 

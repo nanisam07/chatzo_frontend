@@ -31,7 +31,7 @@ export default function DashboardLayout({
     if (code) {
       const defaultRedirect = process.env.NEXT_PUBLIC_API_URL 
         ? `${process.env.NEXT_PUBLIC_API_URL}/whatsapp/connect` 
-        : "https://chatzo-backend-1yin.onrender.com/api/v1/whatsapp/connect";
+        : "https://offshift-backend-1yin.onrender.com/api/v1/whatsapp/connect";
       const redirectUri = process.env.NEXT_PUBLIC_META_REDIRECT_URI || defaultRedirect;
       connectWhatsApp(code, undefined, undefined, undefined, redirectUri)
         .then(() => {

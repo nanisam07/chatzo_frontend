@@ -61,7 +61,7 @@ export function BentoGrid() {
         {/* Title Block */}
         <div className="space-y-6 max-w-3xl text-left">
           <Typography variant="h2" className="text-foreground font-bold tracking-tight text-4xl md:text-5xl lg:text-[56px] leading-tight">
-            Why Choose Chatzo?
+            Why Choose Offshift?
           </Typography>
           <Typography variant="body" className="text-muted-foreground text-lg md:text-[20px] lg:text-[22px] leading-relaxed max-w-2xl">
             A premium alternative to complex checkout systems. Tap on calculator inputs and checklist selectors to see how they work.
@@ -106,7 +106,7 @@ export function BentoGrid() {
                   <span>-${amazonFee}</span>
                 </div>
                 <div className="flex justify-between text-whatsapp font-bold border-t border-border pt-1.5 mt-1.5">
-                  <span>Chatzo Fee (0%):</span>
+                  <span>Offshift Fee (0%):</span>
                   <span>$0.00 Saved!</span>
                 </div>
               </div>

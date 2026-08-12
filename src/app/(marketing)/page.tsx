@@ -18,7 +18,7 @@ export default function MarketingPage() {
       {/* Section 1: Trusted by Businesses stats node map */}
       <TrustedBusinesses />
 
-      {/* Section 2: Why Chatzo interactive Bento Grid */}
+      {/* Section 2: Why Offshift interactive Bento Grid */}
       <BentoGrid />
 
       {/* Section 3: Business Dashboard Showcase live simulator */}

@@ -204,10 +204,10 @@ export function PhoneMockup() {
               <div className="flex items-center gap-2">
                 {/* Profile Pic */}
                 <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-whatsapp to-purple-accent flex items-center justify-center text-[10px] font-bold text-black border border-white/20">
-                  CZ
+                  OS
                 </div>
                 <div>
-                  <h4 className="font-bold text-white text-[11px] leading-tight">Chatzo Store</h4>
+                  <h4 className="font-bold text-white text-[11px] leading-tight">Offshift Store</h4>
                   <div className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-whatsapp animate-ping" />
                     <span className="text-[8px] text-whatsapp font-medium">online</span>
@@ -268,7 +268,7 @@ export function PhoneMockup() {
               <p className="text-[10px] dark:text-neutral-400 text-slate-500 max-w-[200px] mx-auto mt-2 leading-relaxed">
                 {isOrderAccepted
                   ? "Artisan Design Co. accepted your order. A digital invoice has been dispatched via WhatsApp."
-                  : "Processing your order via Chatzo commerce router..."}
+                  : "Processing your order via Offshift commerce router..."}
               </p>
             </div>
 

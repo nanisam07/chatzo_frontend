@@ -8,7 +8,7 @@ export default function DashboardRootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    let category = localStorage.getItem("chatzo_merchant_category") || "retail";
+    let category = localStorage.getItem("offshift_merchant_category") || "retail";
     
     // Map signup category "food" to configuration "restaurant"
     if (category === "food") {

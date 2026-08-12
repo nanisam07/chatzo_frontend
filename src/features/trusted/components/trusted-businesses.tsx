@@ -196,7 +196,7 @@ export function TrustedBusinesses() {
             Trusted by Thousands of Hyper-Growth Stores.
           </Typography>
           <Typography variant="body" className="text-muted-foreground text-lg md:text-[20px] lg:text-[22px] leading-relaxed max-w-2xl mx-auto">
-            Chatzo operates live node networks spanning across messaging channels, checkout pipelines, and merchant accounts. See the scale of operations.
+            Offshift operates live node networks spanning across messaging channels, checkout pipelines, and merchant accounts. See the scale of operations.
           </Typography>
         </div>
 

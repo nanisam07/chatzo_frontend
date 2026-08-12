@@ -85,7 +85,7 @@ export function HeroLayout() {
           className="absolute inset-0 flex flex-col justify-center items-center pointer-events-none select-none z-0 overflow-hidden will-change-transform"
         >
           <div className="absolute text-[24vw] font-black tracking-tighter leading-none dark:text-white/[0.01] text-slate-900/[0.02] uppercase top-[20%] select-none">
-            CHATZO
+            OFFSHIFT
           </div>
         </div>
 

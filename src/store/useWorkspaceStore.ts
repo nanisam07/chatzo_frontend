@@ -228,7 +228,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       // Default Base State
       isLoading: false,
       currentCategory: "retail",
-      apiSyncStatus: "https://api.chatzo.io/v1/meta/webhook",
+      apiSyncStatus: "https://api.offshift.io/v1/meta/webhook",
       toast: null,
 
       // Empty Profile State (hydrated dynamically)
@@ -350,7 +350,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
                 freeDeliveryThreshold: 500,
                 deliveryTime: "30-45 mins",
                 deliveryRadius: 8,
-                website: `https://chatzo.io/store/${user.merchantProfile?.id || ""}`,
+                website: `https://offshift.io/store/${user.merchantProfile?.id || ""}`,
                 storeUsername: user.merchantProfile?.businessName?.toLowerCase().replace(/\s+/g, "") || "",
                 storeRating: 4.8,
                 ordersCount: 0,
@@ -465,8 +465,8 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             get().showToast("WhatsApp connected successfully", "success");
             await get().fetchWhatsAppStatus();
           }
-        } catch (err: any) {
-          get().showToast(err.message || "Failed to connect WhatsApp", "error");
+        } catch (err: unknown) {
+          get().showToast((err as Error).message || "Failed to connect WhatsApp", "error");
           throw err;
         }
       },
@@ -835,7 +835,7 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
     }),
     {
-      name: "chatzo-workspace-storage",
+      name: "offshift-workspace-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Keep onboardingChecklist and local-only branches persisted

@@ -289,7 +289,7 @@ export default function BookDemoPage() {
             className="text-lg text-muted-foreground max-w-[560px] mx-auto leading-relaxed"
             style={{ animation: "demoFadeUp 0.6s 0.16s ease-out both" }}
           >
-            See exactly how Chatzo transforms your WhatsApp into a live sales engine — tailored to your business.
+            See exactly how Offshift transforms your WhatsApp into a live sales engine — tailored to your business.
           </p>
 
           {/* Trust badges */}
@@ -551,7 +551,7 @@ export default function BookDemoPage() {
                 ))}
               </div>
               <blockquote className="text-sm text-foreground font-medium leading-relaxed mb-4">
-                &ldquo;Chatzo helped us close 3× more orders in the first week. The WhatsApp storefront is incredible.&rdquo;
+                &ldquo;Offshift helped us close 3× more orders in the first week. The WhatsApp storefront is incredible.&rdquo;
               </blockquote>
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#25D366] to-[#00D4FF] flex items-center justify-center shrink-0">
@@ -564,9 +564,9 @@ export default function BookDemoPage() {
               </div>
             </div>
 
-            {/* Businesses using Chatzo */}
+            {/* Businesses using Offshift */}
             <div className="rounded-[24px] border border-border p-6" style={{ background: "var(--glass-bg)", backdropFilter: "blur(16px)" }}>
-              <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Businesses on Chatzo</h4>
+              <h4 className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-4">Businesses on Offshift</h4>
               <div className="space-y-3">
                 {BUSINESSES.map((b) => (
                   <div key={b.name} className="flex items-center gap-3">

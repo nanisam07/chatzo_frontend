@@ -15,8 +15,8 @@ interface FaqItem {
 
 const FAQS: FaqItem[] = [
   {
-    question: "Do I need a WhatsApp Business API account to use Chatzo?",
-    answer: "No! Chatzo integrates directly with standard personal or business numbers. If you require massive high-volume automation, you can connect your official Meta Business API with one-click from the setup board.",
+    question: "Do I need a WhatsApp Business API account to use Offshift?",
+    answer: "No! Offshift integrates directly with standard personal or business numbers. If you require massive high-volume automation, you can connect your official Meta Business API with one-click from the setup board.",
   },
   {
     question: "How do transaction payouts and checkout commissions work?",
@@ -28,7 +28,7 @@ const FAQS: FaqItem[] = [
   },
   {
     question: "What is AI Cart Abandonment Recovery?",
-    answer: "If a customer accesses your storefront link but drops out before sending the final WhatsApp order request, Chatzo tracks the checkout leakage and can automatically trigger a localized WhatsApp recovery notification with a custom discount offer.",
+    answer: "If a customer accesses your storefront link but drops out before sending the final WhatsApp order request, Offshift tracks the checkout leakage and can automatically trigger a localized WhatsApp recovery notification with a custom discount offer.",
   },
 ];
 
@@ -49,7 +49,7 @@ export function FaqAccordion() {
             Frequently Asked Questions
           </Typography>
           <Typography variant="body" className="text-muted-foreground text-lg md:text-[20px] lg:text-[22px] leading-relaxed">
-            Everything you need to know about Chatzo storefront catalogs, merchant center tracking, and pricing layers.
+            Everything you need to know about Offshift storefront catalogs, merchant center tracking, and pricing layers.
           </Typography>
         </div>
 

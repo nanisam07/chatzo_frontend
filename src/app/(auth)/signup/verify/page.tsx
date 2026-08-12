@@ -345,10 +345,10 @@ export default function VerifyEmailPage() {
         <div className="text-xs text-muted-foreground">
           Need help setting up? Contact{" "}
           <a
-            href="mailto:support@chatzo.io"
+            href="mailto:support@offshift.io"
             className="text-foreground font-semibold hover:underline"
           >
-            support@chatzo.io
+            support@offshift.io
           </a>
         </div>
       </div>
