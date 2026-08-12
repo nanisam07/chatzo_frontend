@@ -452,7 +452,13 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             connectionStatus?: string;
           };
           if (res.success) {
-            set({ whatsappStatusDetails: res });
+            set((state) => ({
+              whatsappStatusDetails: res,
+              profile: {
+                ...state.profile,
+                whatsappStatus: res.connected || res.connectionStatus === "Connected" ? "Connected" : state.profile.whatsappStatus,
+              },
+            }));
           }
         } catch (err) {
           console.error("fetchWhatsAppStatus failed", err);
@@ -473,17 +479,32 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
       },
 
       setManualWhatsAppCredentials: ({ phoneNumberId, wabaId, accessToken: _accessToken, businessName }) => {
-        set({
-          whatsappStatusDetails: {
-            connected: true,
-            phoneNumberId,
-            wabaId,
-            displayPhoneNumber: phoneNumberId,
-            businessName: businessName || "OFFSHIFT Shop",
-            webhookStatus: "Verified",
-            cloudApiStatus: "Connected",
-            connectionStatus: "Connected",
-          },
+        set((state) => {
+          const currentChecklist = state.onboardingChecklists["retail"] || [];
+          const updatedChecklist = currentChecklist.includes("Connect WhatsApp")
+            ? currentChecklist
+            : [...currentChecklist, "Connect WhatsApp"];
+
+          return {
+            whatsappStatusDetails: {
+              connected: true,
+              phoneNumberId,
+              wabaId,
+              displayPhoneNumber: phoneNumberId,
+              businessName: businessName || "OFFSHIFT Shop",
+              webhookStatus: "Verified",
+              cloudApiStatus: "Connected",
+              connectionStatus: "Connected",
+            },
+            profile: {
+              ...state.profile,
+              whatsappStatus: "Connected",
+            },
+            onboardingChecklists: {
+              ...state.onboardingChecklists,
+              retail: updatedChecklist,
+            },
+          };
         });
         get().showToast("WhatsApp Cloud API credentials saved successfully!", "success");
       },
