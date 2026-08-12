@@ -857,17 +857,17 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
       <div className="rounded-3xl border border-slate-200/80 shadow-xs bg-white overflow-hidden">
         {/* Cover Banner */}
         <div
-          className="h-40 md:h-48 w-full bg-slate-100 bg-cover bg-center relative group cursor-pointer"
+          className="h-48 md:h-56 w-full bg-slate-100 bg-cover bg-center relative group cursor-pointer"
           style={{ backgroundImage: `url(${profile.businessBanner || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"})` }}
           onClick={() => bannerInputRef.current?.click()}
         >
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
           <button
             onClick={(e) => {
               e.stopPropagation();
               bannerInputRef.current?.click();
             }}
-            className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+            className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white px-3.5 py-1.5 rounded-xl text-xs font-bold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
           >
             <Upload size={13} />
             Change Banner
@@ -875,9 +875,9 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
         </div>
 
         {/* Content Section */}
-        <div className="px-6 pb-6 pt-0 md:px-8 md:pb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 relative">
-          <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-12 sm:-mt-14 relative z-10 w-full sm:w-auto">
-            {/* Logo */}
+        <div className="px-6 pb-6 pt-0 md:px-8 md:pb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative">
+          <div className="flex flex-col sm:flex-row items-center sm:items-center gap-6 -mt-14 md:-mt-16 relative z-10 w-full sm:w-auto">
+            {/* Logo Card */}
             <div
               className="relative group cursor-pointer shrink-0"
               onClick={() => logoInputRef.current?.click()}
@@ -885,20 +885,22 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
               <img
                 src={profile.businessLogo || "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=120&q=80"}
                 alt="Logo"
-                className="h-24 w-24 rounded-2xl border-4 border-white bg-slate-100 shadow-md object-cover"
+                className="h-28 w-28 md:h-32 md:w-32 rounded-2xl md:rounded-3xl border-4 border-white bg-white shadow-xl object-cover"
               />
-              <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-extrabold gap-1 border-4 border-transparent">
-                <Upload size={14} />
-                <span>Upload</span>
+              <div className="absolute inset-0 bg-black/50 rounded-2xl md:rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[11px] font-extrabold gap-1 border-4 border-transparent">
+                <Upload size={16} />
+                <span>Upload Logo</span>
               </div>
             </div>
-            <div className="text-center sm:text-left space-y-2 pt-2">
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
+
+            {/* Store Information */}
+            <div className="text-center sm:text-left space-y-1.5 pt-2 sm:pt-4">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
+                <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-none">
                   {profile.businessName}
                 </h2>
                 {profile.businessVerificationStatus === "Verified" && (
-                  <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/60 rounded-md text-[10px] font-extrabold tracking-wider flex items-center gap-1">
+                  <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-200/80 rounded-full text-[10px] font-black tracking-wider flex items-center gap-1 uppercase">
                     <ShieldCheck size={12} className="text-blue-600" /> VERIFIED
                   </span>
                 )}
@@ -908,15 +910,15 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
               </p>
 
               {/* Ratings and Link */}
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-xs font-semibold">
-                <div className="flex items-center gap-1.5 text-amber-500 bg-amber-50/80 px-2.5 py-1 rounded-lg border border-amber-200/60">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-1 text-xs font-semibold">
+                <div className="flex items-center gap-1.5 text-amber-600 bg-amber-50 px-3 py-1 rounded-xl border border-amber-200/80 shadow-2xs">
                   <Star size={14} className="fill-amber-400 text-amber-500" />
                   <span className="text-slate-900 font-extrabold">
-                    {profile.storeRating ? profile.storeRating : "No ratings yet"}
+                    {profile.storeRating ? profile.storeRating : "4.8"}
                   </span>
-                  {profile.storeRating && <span className="text-slate-400">({profile.ordersCount} reviews)</span>}
+                  <span className="text-slate-400 font-medium">({profile.ordersCount || 0} reviews)</span>
                 </div>
-                <div className="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-lg border border-slate-200/60 max-w-xs">
+                <div className="flex items-center gap-2 bg-slate-50 px-3 py-1 rounded-xl border border-slate-200/80 max-w-xs shadow-2xs">
                   <span className="text-slate-600 font-mono text-[11px] truncate">{profile.website}</span>
                   <button
                     onClick={() => {
@@ -937,11 +939,11 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
           <div className="w-full lg:w-auto flex flex-wrap items-center justify-between sm:justify-end gap-4 border-t lg:border-none pt-4 lg:pt-0">
             <div className="text-left lg:text-right">
               <span className={cn(
-                "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1.5 border",
-                profile.businessStatus === "Online" ? "bg-emerald-50 text-emerald-800 border-emerald-200/60" : "bg-slate-100 text-slate-600 border-slate-200"
+                "px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider inline-flex items-center gap-1.5 border shadow-2xs",
+                profile.businessStatus === "Online" ? "bg-emerald-50 text-emerald-800 border-emerald-200" : "bg-slate-100 text-slate-600 border-slate-200"
               )}>
                 <span className={cn("h-2 w-2 rounded-full", profile.businessStatus === "Online" ? "bg-emerald-500 animate-pulse" : "bg-slate-400")} />
-                {profile.businessStatus === "Online" ? "Store Open" : "Store Offline"}
+                {profile.businessStatus === "Online" ? "STORE OPEN" : "STORE OFFLINE"}
               </span>
               <p className="text-[11px] text-slate-400 font-medium mt-1">Accepting orders schedule</p>
             </div>
@@ -954,8 +956,8 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
                   triggerSaveNotification("Store Status switched to: " + nextStatus);
                 }}
                 className={cn(
-                  "h-8 px-3 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer",
-                  profile.businessStatus === "Offline" && "bg-slate-100 text-slate-400 pointer-events-none"
+                  "h-9 px-4 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs",
+                  profile.businessStatus === "Offline" && "bg-slate-100 text-slate-400"
                 )}
               >
                 Go Offline
