@@ -47,6 +47,7 @@ import {
   ChevronRight,
   ExternalLink,
   Copy,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { WhatsAppConnectModal } from "@/components/dashboard/WhatsAppConnectModal";
@@ -224,6 +225,7 @@ export function OverviewTab({ category, config }: WidgetTabProps) {
     updateProfile,
     updateOrderStatus,
     transactions,
+    disconnectWhatsApp,
   } = useWorkspaceStore();
 
   const [showWAModal, setShowWAModal] = useState(false);
@@ -325,7 +327,15 @@ export function OverviewTab({ category, config }: WidgetTabProps) {
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 w-full md:w-auto shrink-0">
-            {!isWhatsAppConnected && (
+            {isWhatsAppConnected ? (
+              <button
+                onClick={() => disconnectWhatsApp()}
+                className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold text-xs shadow-xs transition-all active:scale-98 cursor-pointer"
+              >
+                <X size={15} />
+                Disconnect WhatsApp
+              </button>
+            ) : (
               <button
                 onClick={() => setShowWAModal(true)}
                 className="inline-flex items-center justify-center gap-2 h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all active:scale-98 cursor-pointer"

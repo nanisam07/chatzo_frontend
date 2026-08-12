@@ -860,25 +860,30 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
         }
       },
 
-      addDeliveryZone: async (zone) => {
-        try {
-          const newZone = await merchantApi.addDeliveryZone(zone);
-          set((state) => ({
-            deliveryZones: [...state.deliveryZones, newZone],
-          }));
-        } catch (error) {
-          get().showToast("Failed to add delivery zone on backend", "error");
-          throw error;
-        }
+      disconnectWhatsApp: async () => {
+        set((state) => ({
+          whatsappStatusDetails: {
+            connected: false,
+            webhookStatus: "Disconnected",
+            cloudApiStatus: "Disconnected",
+            connectionStatus: "Disconnected",
+          },
+          profile: {
+            ...state.profile,
+            whatsappStatus: "Disconnected",
+          },
+        }));
+        get().showToast("WhatsApp disconnected successfully", "info");
       },
     }),
     {
       name: "offshift-workspace-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        // Keep onboardingChecklist and local-only branches persisted
         branches: state.branches,
         onboardingChecklists: state.onboardingChecklists,
+        whatsappStatusDetails: state.whatsappStatusDetails,
+        profile: state.profile,
       }),
     }
   )
