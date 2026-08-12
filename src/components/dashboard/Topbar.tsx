@@ -30,9 +30,13 @@ export function Topbar({
   onActionTrigger,
 }: TopbarProps) {
   const activeCategoryConfig = CATEGORIES_CONFIG[currentCategory] || CATEGORIES_CONFIG.retail;
-  const { apiSyncStatus, profile } = useWorkspaceStore();
+  const { profile, updateProfile } = useWorkspaceStore();
+  const isStoreOnline = profile.businessStatus === "Online";
 
-  const isConnected = apiSyncStatus === "Connected";
+  const toggleStoreStatus = () => {
+    const nextStatus = isStoreOnline ? "Offline" : "Online";
+    updateProfile({ businessStatus: nextStatus });
+  };
 
   const getTabTitle = () => {
     switch (currentTab) {
@@ -166,38 +170,40 @@ export function Topbar({
 
       {/* Right — status + actions */}
       <div className="flex items-center gap-2.5">
-        {/* WhatsApp connection status */}
-        <div
+        {/* Store Online / Offline Status Toggle Badge */}
+        <button
+          onClick={toggleStoreStatus}
+          title="Click to toggle store Online / Offline status"
           className={cn(
-            "hidden md:flex items-center gap-2 rounded-xl px-3 py-1.5 border text-[10px] font-black uppercase tracking-wider transition-all",
-            isConnected
-              ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-              : "bg-red-50 border-red-200 text-red-600"
+            "hidden md:flex items-center gap-2 rounded-xl px-3 py-1.5 border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer hover:shadow-xs active:scale-98",
+            isStoreOnline
+              ? "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100/80"
+              : "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100/80"
           )}
         >
           <div className="relative flex h-2 w-2 shrink-0">
-            {isConnected && (
+            {isStoreOnline && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-60" />
             )}
             <span
               className={cn(
                 "relative inline-flex rounded-full h-2 w-2",
-                isConnected ? "bg-emerald-500" : "bg-red-500"
+                isStoreOnline ? "bg-emerald-500" : "bg-amber-500"
               )}
             />
           </div>
-          {isConnected ? (
+          {isStoreOnline ? (
             <>
               <Wifi size={11} />
-              <span>WhatsApp Live</span>
+              <span>Store Open (Online)</span>
             </>
           ) : (
             <>
               <WifiOff size={11} />
-              <span>Offline</span>
+              <span>Store Closed (Offline)</span>
             </>
           )}
-        </div>
+        </button>
 
         {/* Quick Action CTA */}
         {quickAction && (
