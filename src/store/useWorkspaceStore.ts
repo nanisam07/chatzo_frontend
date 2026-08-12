@@ -452,13 +452,25 @@ export const useWorkspaceStore = create<WorkspaceStore>()(
             connectionStatus?: string;
           };
           if (res.success) {
-            set((state) => ({
-              whatsappStatusDetails: res,
-              profile: {
-                ...state.profile,
-                whatsappStatus: res.connected || res.connectionStatus === "Connected" ? "Connected" : state.profile.whatsappStatus,
-              },
-            }));
+            set((state) => {
+              const isLocallyConnected = Boolean(state.whatsappStatusDetails?.connected || state.profile?.whatsappStatus === "Connected");
+              const isConnected = res.connected || res.connectionStatus === "Connected" || isLocallyConnected;
+
+              return {
+                whatsappStatusDetails: {
+                  ...state.whatsappStatusDetails,
+                  ...res,
+                  connected: isConnected,
+                  webhookStatus: isConnected ? "Verified" : (res.webhookStatus || "Pending"),
+                  cloudApiStatus: isConnected ? "Connected" : (res.cloudApiStatus || "Disconnected"),
+                  connectionStatus: isConnected ? "Connected" : "Disconnected",
+                },
+                profile: {
+                  ...state.profile,
+                  whatsappStatus: isConnected ? "Connected" : "Disconnected",
+                },
+              };
+            });
           }
         } catch (err) {
           console.error("fetchWhatsAppStatus failed", err);
