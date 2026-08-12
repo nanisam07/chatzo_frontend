@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { CategoryConfig } from "@/lib/config/categories";
 import { useWorkspaceStore } from "@/store/useWorkspaceStore";
 import { ProductItem } from "@/lib/api/products";
@@ -679,6 +679,39 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
   const { profile, updateProfile, orders, products, deliveryZones, addDeliveryZone, addItem } = useWorkspaceStore();
   const colors = getCategoryColors(category);
 
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const handleBannerUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          updateProfile({ businessBanner: dataUrl });
+          showToast("Shop Banner updated successfully!", "success");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          updateProfile({ businessLogo: dataUrl });
+          showToast("Shop Logo updated successfully!", "success");
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const [activeSubTab, setActiveSubTab] = useState<"home" | "products" | "catalog" | "storefront" | "location" | "settings">("home");
 
   const [isEditingDetails, setIsEditingDetails] = useState(false);
@@ -765,6 +798,22 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
 
   return (
     <div className="space-y-6 font-sans antialiased text-slate-900">
+      {/* Hidden File Inputs for Banner & Logo */}
+      <input
+        ref={bannerInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleBannerUpload}
+      />
+      <input
+        ref={logoInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleLogoUpload}
+      />
+
       {/* PAGE HEADER */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/80 pb-4">
         <div className="space-y-1">
@@ -779,9 +828,17 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
             Edit Shop
           </button>
           <button
-            onClick={() => showToast("Banner file selector opened.", "info")}
-            className="h-9 px-3.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer"
+            onClick={() => logoInputRef.current?.click()}
+            className="h-9 px-3.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
           >
+            <Upload size={13} />
+            Upload Logo
+          </button>
+          <button
+            onClick={() => bannerInputRef.current?.click()}
+            className="h-9 px-3.5 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5"
+          >
+            <Upload size={13} />
             Change Banner
           </button>
           <button
@@ -799,19 +856,42 @@ export function MyShopTab({ category, config }: WidgetTabProps) {
       {/* SHOP PROFILE HERO */}
       <div className="rounded-3xl border border-slate-200/80 shadow-xs bg-white overflow-hidden">
         {/* Cover Banner */}
-        <div className="h-40 md:h-48 w-full bg-slate-100 bg-cover bg-center relative" style={{ backgroundImage: "url(" + profile.businessBanner + ")" }}>
+        <div
+          className="h-40 md:h-48 w-full bg-slate-100 bg-cover bg-center relative group cursor-pointer"
+          style={{ backgroundImage: `url(${profile.businessBanner || "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80"})` }}
+          onClick={() => bannerInputRef.current?.click()}
+        >
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              bannerInputRef.current?.click();
+            }}
+            className="absolute top-4 right-4 bg-black/60 hover:bg-black/80 text-white px-3 py-1.5 rounded-xl text-xs font-bold backdrop-blur-md border border-white/20 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+          >
+            <Upload size={13} />
+            Change Banner
+          </button>
         </div>
 
         {/* Content Section */}
         <div className="px-6 pb-6 pt-0 md:px-8 md:pb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 relative">
           <div className="flex flex-col sm:flex-row items-center sm:items-end gap-5 -mt-12 sm:-mt-14 relative z-10 w-full sm:w-auto">
             {/* Logo */}
-            <img
-              src={profile.businessLogo}
-              alt="Logo"
-              className="h-24 w-24 rounded-2xl border-4 border-white bg-slate-100 shadow-md object-cover shrink-0"
-            />
+            <div
+              className="relative group cursor-pointer shrink-0"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <img
+                src={profile.businessLogo || "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=120&q=80"}
+                alt="Logo"
+                className="h-24 w-24 rounded-2xl border-4 border-white bg-slate-100 shadow-md object-cover"
+              />
+              <div className="absolute inset-0 bg-black/50 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-extrabold gap-1 border-4 border-transparent">
+                <Upload size={14} />
+                <span>Upload</span>
+              </div>
+            </div>
             <div className="text-center sm:text-left space-y-2 pt-2">
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                 <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight leading-tight">
