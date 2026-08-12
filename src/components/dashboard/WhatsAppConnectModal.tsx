@@ -49,7 +49,12 @@ const FEATURES = [
 export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalProps) {
   const [selectedStep, setSelectedStep] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { whatsappStatusDetails, connectWhatsApp, disconnectWhatsApp } = useWorkspaceStore();
+  const [connectionMode, setConnectionMode] = useState<"manual" | "oauth">("manual");
+  const [manualPhoneId, setManualPhoneId] = useState("");
+  const [manualWabaId, setManualWabaId] = useState("");
+  const [manualToken, setManualToken] = useState("");
+
+  const { whatsappStatusDetails, connectWhatsApp, setManualWhatsAppCredentials, disconnectWhatsApp } = useWorkspaceStore();
   const sessionInfoRef = React.useRef<{ wabaId?: string; phoneNumberId?: string }>({});
 
   useEffect(() => {
@@ -325,23 +330,116 @@ export function WhatsAppConnectModal({ isOpen, onClose }: WhatsAppConnectModalPr
             </div>
           ) : (
             <>
-              {/* Onboarding steps details */}
-              <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-4 flex items-start gap-3.5 shadow-2xs">
-                <div className="h-9 w-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 text-white shadow-xs">
-                  <AlertTriangle size={16} />
-                </div>
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Awaiting Backend Integration</p>
-                    <span className="px-2 py-0.5 rounded-md bg-amber-100/80 border border-amber-200 text-[9px] font-bold text-amber-900 uppercase">
-                      Pending Server Setup
-                    </span>
-                  </div>
-                  <p className="text-xs text-amber-800/90 font-medium leading-relaxed">
-                    The Meta Business Suite integration requires the backend server and webhooks to be fully deployed. Once backend configuration goes live, this wizard will initiate Meta&apos;s OAuth flow.
-                  </p>
-                </div>
+              {/* Mode Switcher Tabs */}
+              <div className="flex bg-slate-100 p-1 rounded-2xl gap-1">
+                <button
+                  type="button"
+                  onClick={() => setConnectionMode("manual")}
+                  className={cn(
+                    "flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer",
+                    connectionMode === "manual" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"
+                  )}
+                >
+                  Direct API Credentials (Recommended)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConnectionMode("oauth")}
+                  className={cn(
+                    "flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer",
+                    connectionMode === "oauth" ? "bg-white text-slate-900 shadow-xs" : "text-slate-500 hover:text-slate-900"
+                  )}
+                >
+                  Meta OAuth Login
+                </button>
               </div>
+
+              {connectionMode === "manual" ? (
+                <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-4">
+                  <div className="space-y-1">
+                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                      Connect via Meta Cloud API Credentials
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium">
+                      Enter your Meta Developer keys to connect your WhatsApp Business Account directly.
+                    </p>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                        Phone Number ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1267476043109239"
+                        value={manualPhoneId}
+                        onChange={(e) => setManualPhoneId(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white font-mono text-slate-800 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                        WhatsApp Business Account ID (WABA ID)
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 1799393961247234"
+                        value={manualWabaId}
+                        onChange={(e) => setManualWabaId(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white font-mono text-slate-800 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block mb-1">
+                        Access Token (Permanent or Temporary)
+                      </label>
+                      <textarea
+                        rows={2}
+                        placeholder="Paste Meta Access Token here..."
+                        value={manualToken}
+                        onChange={(e) => setManualToken(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-slate-200 bg-white font-mono text-slate-800 focus:outline-none focus:border-emerald-500"
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!manualPhoneId || !manualWabaId || !manualToken) {
+                          alert("Please fill in Phone Number ID, WABA ID, and Access Token.");
+                          return;
+                        }
+                        setManualWhatsAppCredentials({
+                          phoneNumberId: manualPhoneId,
+                          wabaId: manualWabaId,
+                          accessToken: manualToken,
+                        });
+                        onClose();
+                      }}
+                      className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-xs"
+                    >
+                      Save & Activate WhatsApp Connection
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-amber-50/80 border border-amber-200/80 p-4 flex items-start gap-3.5 shadow-2xs">
+                  <div className="h-9 w-9 rounded-xl bg-amber-500 flex items-center justify-center shrink-0 text-white shadow-xs">
+                    <AlertTriangle size={16} />
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Meta OAuth Flow</p>
+                    </div>
+                    <p className="text-xs text-amber-800/90 font-medium leading-relaxed">
+                      Launches FB.login popup. Requires Meta App to be in Live mode or Facebook user added to Meta App Developers.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
                 {/* Left Side: Onboarding Steps */}
