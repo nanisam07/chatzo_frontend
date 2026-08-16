@@ -3,7 +3,6 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
 import { BRAND } from "@/lib/constants";
 import {
   Home,
@@ -14,8 +13,6 @@ import {
   LogIn,
   Calendar,
   Rocket,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMagnetic } from "@/hooks/use-magnetic";
@@ -37,14 +34,11 @@ const DOCK_LINKS: NavItem[] = [
 
 export function Header() {
   const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
   const [activeItem, setActiveItem] = React.useState("/");
   const dockRef = useMagnetic<HTMLDivElement>();
 
   React.useEffect(() => {
-    setMounted(true);
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
     };
@@ -129,23 +123,6 @@ export function Header() {
         {/* Dock Bottom: Actions */}
         <div className="flex flex-col gap-1 border-t border-border pt-4">
           
-          {/* Theme Toggler */}
-          {mounted && (
-            <button
-              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-              className="flex items-center gap-3 p-3 rounded-2xl text-muted-foreground hover:text-foreground dark:hover:bg-secondary hover:bg-secondary transition-all cursor-pointer group/theme"
-            >
-              {theme === "dark" ? (
-                <Sun size={18} className="shrink-0 group-hover/theme:rotate-45 transition-transform duration-500 text-amber-400" />
-              ) : (
-                <Moon size={18} className="shrink-0 group-hover/theme:-rotate-12 transition-transform duration-500 text-purple-accent" />
-              )}
-              <span className="text-xs font-semibold opacity-0 group-hover/dock:opacity-100 transition-opacity duration-300 whitespace-nowrap">
-                {theme === "dark" ? "Light Mode" : "Dark Mode"}
-              </span>
-            </button>
-          )}
-
           {/* Login Link */}
           <Link
             href="/login"
